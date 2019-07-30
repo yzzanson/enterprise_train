@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.enterprise.mapper.pet.MyPetMapper">
+    <resultMap id="BaseResultMap" type="com.enterprise.base.entity.MyPetEntity">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="user_id" jdbcType="INTEGER" property="userId"/>
+        <result column="pet_id" jdbcType="INTEGER" property="petId"/>
+        <result column="pet_name" jdbcType="VARCHAR" property="petName"/>
+        <result column="level" jdbcType="INTEGER" property="level"/>
+        <result column="experience_value" jdbcType="INTEGER" property="experienceValue"/>
+        <result column="physical_value" jdbcType="INTEGER" property="physicalValue"/>
+        <result column="status" jdbcType="INTEGER" property="status"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+    </resultMap>
+
+    <sql id="baseColumnList">
+		id,user_id,pet_id,pet_name,level,experience_value,physical_value,status,create_time,update_time
+	</sql>
+
+    <insert id="createOrUpdateMyPet" parameterType="com.enterprise.base.entity.MyPetEntity"
+            useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO my_pet (user_id,pet_id,pet_name,level,experience_value,physical_value,status,create_time,update_time)
+		VALUES (#{userId},#{petId}, #{petName},#{level},#{experienceValue},#{physicalValue},#{status},now(),now())
+		ON DUPLICATE KEY UPDATE pet_id = #{petId}, pet_name=#{petName}, level=#{level},experience_value=#{experienceValue},physical_value=#{physicalValue},status=#{status},update_time = now()
+	</insert>
+
+    <update id="updateMyPet" parameterType="com.enterprise.base.entity.MyPetEntity">
+        update my_pet
+        <set>
+            <if test="petName != null and petName != ''">
+                pet_name = #{petName},
+            </if>
+            <if test="level != null and level != ''">
+                level = #{level},
+            </if>
+            <if test="experienceValue != null and experienceValue != ''">
+                experience_value = #{experienceValue},
+            </if>
+            <if test="physicalValue != null and physicalValue != ''">
+                physical_value = #{physicalValue},
+            </if>
+            <if test="status != null and status != ''">
+                status = #{status},
+            </if>
+            <if test="updateTime != null">
+                update_time = now(),
+            </if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+
+    <update id="updatePetExp" parameterType="com.enterprise.base.entity.MyPetEntity">
+        UPDATE my_pet
+        <set>
+            <if test="experienceValue != null and experienceValue != ''">
+                experience_value = experience_value + #{experienceValue},
+            </if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <update id="updatePetPhysicalValue" parameterType="com.enterprise.base.entity.MyPetEntity">
+        UPDATE my_pet
+        <set>
+            <if test="physicalValue != null and physicalValue != ''">
+                physical_value = #{physicalValue},
+            </if>
+            <if test="level != null and level != ''">
+                level = #{level},
+            </if>
+
+        </set>
+        WHERE id = #{id}
+    </update>
+
+
+    <update id="updatePetPhysicalValue2">
+        UPDATE my_pet
+        <set>
+            <if test="physicalValue != null and physicalValue != ''">
+                physical_value = physical_value + #{physicalValue},
+            </if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+
+    <select id="getMyPet" resultType="com.enterprise.base.vo.MyPetVO">
+		SELECT id,pet_name AS petName,level AS level,user_id AS userId,
+		experience_value AS experienceValue,physical_value AS physicalValue FROM my_pet WHERE status = 1
+		 AND user_id = #{userId} ORDER BY id desc
+	</select>
+
+    <select id="getMyPetNew" resultType="com.enterprise.base.vo.MyPetVONew">
+		SELECT id,pet_name AS petName,user_id AS userId FROM my_pet WHERE status = 1
+		 AND user_id = #{userId} ORDER BY id desc
+	</select>
+
+    <select id="getUsersByCompany" resultType="java.lang.Integer">
+		SELECT user_id FROM my_pet WHERE status = 1
+		 AND user_id IN (SELECT user_id FROM user_x_company WHERE corp_id = #{corpId} AND status = 1)
+        <if test="notIncludeUserList != null and notIncludeUserList.size > 0">
+        AND user_id NOT IN
+            <foreach collection="notIncludeUserList" item="item" open="(" index="index" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+	</select>
+
+
+
+</mapper>

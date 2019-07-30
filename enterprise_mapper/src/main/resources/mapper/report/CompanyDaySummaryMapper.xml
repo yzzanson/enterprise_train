@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.enterprise.mapper.report.CompanyDaySummaryMapper">
+	<resultMap id="BaseResultMap" type="com.enterprise.base.entity.CompanyDaySummaryEntity">
+		<id column="id" jdbcType="INTEGER" property="id" />
+		<result column="company_id" jdbcType="INTEGER" property="companyId" />
+		<result column="enter_count" jdbcType="INTEGER" property="enterCount" />
+		<result column="study_count" jdbcType="INTEGER" property="studyCount" />
+		<result column="new_user_count" jdbcType="VARCHAR" property="newUserCount" />
+		<result column="date" jdbcType="TIMESTAMP" property="date" />
+		<result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+		<result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+	</resultMap>
+
+	<sql id="baseColumnList" >
+		id,company_id,enter_count,study_count,new_user_count,date,create_time,update_time
+	</sql>
+
+
+	<insert id="createCompayDaySummary" parameterType="com.enterprise.base.entity.CompanyDaySummaryEntity"
+			useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO company_day_summary (company_id,enter_count,study_count,new_user_count,date,create_time,update_time)
+		VALUES (#{companyId},#{enterCount},#{studyCount}, #{newUserCount},#{date},#{createTime},#{updateTime})
+	</insert>
+
+
+	<update id="updateCompanySummary">
+		UPDATE company_day_summary
+		<set>
+			<if test="enterCount != null and enterCount != ''">
+				enter_count = #{enterCount},
+			</if>
+			<if test="studyCount != null and studyCount != ''">
+				study_count = #{studyCount},
+			</if>
+			<if test="newUserCount != null and newUserCount != ''">
+				new_user_count = #{newUserCount},
+			</if>
+		</set>
+		where id = #{id}
+	</update>
+
+	<select id="getCompanyDaySummaryByCompanyIdAndDate" resultMap="BaseResultMap">
+		SELECT * FROM company_day_summary WHERE DATE_FORMAT(date,'%Y-%m-%d') = #{date}
+		<if test="companyId != null">
+			AND company_id = #{companyId}
+		</if>
+	</select>
+
+	<select id="getCompanyDaySummaryByDate" resultMap="BaseResultMap">
+		SELECT * FROM company_day_summary WHERE DATE_FORMAT(date,'%Y-%m-%d') = #{date}
+	</select>
+
+	<update id="batchUpdate" parameterType="java.util.List">
+		update company_day_summary
+		set  study_count =
+		<foreach collection="updateList" item="item" index="index" separator=" " open="case ID" close="end">
+			when #{item.id} then #{item.studyCount}
+		</foreach>
+		where id in
+		<foreach collection="updateList" index="index" item="item"
+				 separator="," open="(" close=")">
+			#{item.id,jdbcType=BIGINT}
+		</foreach>
+	</update>
+
+</mapper>

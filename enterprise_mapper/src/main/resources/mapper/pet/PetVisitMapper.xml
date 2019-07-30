@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.enterprise.mapper.pet.PetVisittMapper">
+    <resultMap id="BaseResultMap" type="com.enterprise.base.entity.PetVisitEntity">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="company_id" jdbcType="INTEGER" property="companyId"/>
+        <result column="user_id" jdbcType="INTEGER" property="userId"/>
+        <result column="visit_user_id" jdbcType="INTEGER" property="visitUserId"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+    </resultMap>
+
+    <sql id="baseColumnList">
+		id,company_id,user_id,visit_user_id,create_time
+	</sql>
+
+    <insert id="createPetVisit" parameterType="com.enterprise.base.entity.PetVisitEntity"
+            useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO pet_visit (company_id,user_id,visit_user_id,create_time)
+		VALUES (#{companyId},#{userId}, #{visitUserId},now())
+	</insert>
+
+    <select id="getById" resultMap="BaseResultMap">
+		SELECT * FROM pet_visit WHERE id = #{id}
+	</select>
+
+</mapper>

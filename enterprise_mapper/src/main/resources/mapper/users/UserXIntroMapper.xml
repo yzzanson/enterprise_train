@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.enterprise.mapper.users.UserXIntroMapper">
+    <resultMap id="BaseResultMap" type="com.enterprise.base.entity.UserXIntrodEntity">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="user_id" jdbcType="INTEGER" property="userId"/>
+        <result column="growth_answer" jdbcType="INTEGER" property="growthAnswer"/>
+        <result column="choose_lib" jdbcType="INTEGER" property="chooseLib"/>
+        <result column="wrong_answer" jdbcType="INTEGER" property="wrongAnswer"/>
+        <result column="arena" jdbcType="INTEGER" property="arena"/>
+        <result column="arena_init" jdbcType="INTEGER" property="arenaInit"/>
+        <result column="arena_time" jdbcType="INTEGER" property="arenaTime"/>
+        <result column="choose_team" jdbcType="INTEGER" property="chooseTeam"/>
+        <result column="challenge" jdbcType="INTEGER" property="challenge"/>
+        <result column="bag" jdbcType="INTEGER" property="bag"/>
+        <result column="feed_pet" jdbcType="INTEGER" property="feedPet"/>
+        <result column="other_feed_pet" jdbcType="INTEGER" property="otherFeedPet"/>
+        <result column="clean_pet" jdbcType="INTEGER" property="cleanPet"/>
+        <result column="answer" jdbcType="INTEGER" property="answer"/>
+        <result column="new_version" jdbcType="INTEGER" property="newVersion"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+    </resultMap>
+
+    <sql id="baseColumnList">
+		id,user_id,growth_answer,choose_lib,wrong_answer,arena,arena_init,arena_time,choose_team,challenge,bag,feed_pet,other_feed_pet,clean_pet,new_version,answer,create_time,update_time
+	</sql>
+
+    <insert id="createUserXIntro" parameterType="com.enterprise.base.entity.UserXIntrodEntity" useGeneratedKeys="true"
+            keyProperty="id">
+        INSERT INTO user_x_intro
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="userId != null" >
+                user_id,
+            </if>
+            <if test="growthAnswer != null" >
+                growth_answer,
+            </if>
+            <if test="chooseLib != null" >
+                choose_lib,
+            </if>
+            <if test="wrongAnswer != null" >
+                wrong_answer,
+            </if>
+            <if test="arena != null" >
+                arena,
+            </if>
+            <if test="arenaInit != null" >
+                arena_init,
+            </if>
+            <if test="arenaTime != null" >
+                arena_time,
+            </if>
+            <if test="chooseTeam != null" >
+                choose_team,
+            </if>
+            <if test="challenge != null" >
+                challenge,
+            </if>
+            <if test="bag != null" >
+                bag,
+            </if>
+            <if test="feedPet != null" >
+                feed_pet,
+            </if>
+            <if test="otherFeedPet != null" >
+                other_feed_pet,
+            </if>
+            <if test="cleanPet != null" >
+                clean_pet,
+            </if>
+            <if test="newVersion != null" >
+                new_version,
+            </if>
+            <if test="answer != null" >
+                answer,
+            </if>
+            <if test="createTime != null" >
+                create_time,
+            </if>
+            <if test="updateTime != null" >
+                update_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="userId != null" >
+                #{userId,jdbcType=INTEGER},
+            </if>
+            <if test="growthAnswer != null" >
+                #{growthAnswer,jdbcType=INTEGER},
+            </if>
+            <if test="chooseLib != null" >
+                #{chooseLib,jdbcType=INTEGER},
+            </if>
+            <if test="wrongAnswer != null" >
+                #{wrongAnswer,jdbcType=INTEGER},
+            </if>
+            <if test="arena != null" >
+                #{arena,jdbcType=INTEGER},
+            </if>
+            <if test="arenaInit != null" >
+                #{arenaInit,jdbcType=INTEGER},
+            </if>
+            <if test="arenaTime != null" >
+                #{arenaTime,jdbcType=INTEGER},
+            </if>
+            <if test="chooseTeam != null" >
+                #{chooseTeam,jdbcType=INTEGER},
+            </if>
+            <if test="challenge != null" >
+                #{challenge,jdbcType=INTEGER},
+            </if>
+            <if test="bag != null" >
+                #{bag,jdbcType=INTEGER},
+            </if>
+            <if test="feedPet != null" >
+                #{feedPet,jdbcType=INTEGER},
+            </if>
+            <if test="otherFeedPet != null" >
+                #{otherFeedPet,jdbcType=INTEGER},
+            </if>
+            <if test="cleanPet != null" >
+                #{cleanPet,jdbcType=INTEGER},
+            </if>
+            <if test="newVersion != null" >
+                #{newVersion,jdbcType=INTEGER},
+            </if>
+            <if test="answer != null" >
+                #{answer,jdbcType=INTEGER},
+            </if>
+            <if test="createTime != null" >
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateTime != null" >
+                #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+        </trim>
+
+	</insert>
+
+    <update id="updateUserXIntro">
+        update user_x_intro
+        <set>
+            <if test="growthAnswer!=null and growthAnswer ==1">
+                growth_answer = 1,
+            </if>
+            <if test="chooseLib!=null and chooseLib ==1">
+                choose_lib = 1,
+            </if>
+            <if test="wrongAnswer!=null and wrongAnswer ==1">
+                wrong_answer = 1,
+            </if>
+            <if test="arena!=null and arena ==1">
+                arena = 1,
+            </if>
+            <if test="arenaInit!=null and arenaInit ==1">
+                arena_init = 1,
+            </if>
+            <if test="arenaTime!=null and arenaTime ==1">
+                arena_time = 1,
+            </if>
+            <if test="chooseTeam!=null and chooseTeam ==1">
+                choose_team = 1,
+            </if>
+            <if test="challenge!=null and challenge ==1">
+                challenge = 1,
+            </if>
+            <if test="bag!=null and bag ==1">
+                bag = 1,
+            </if>
+            <if test="feedPet!=null and feedPet ==1" >
+                feed_pet = 1,
+            </if>
+            <if test="otherFeedPet!=null and otherFeedPet ==1" >
+                other_feed_pet = 1,
+            </if>
+            <if test="cleanPet!=null and cleanPet ==1" >
+                clean_pet = 1,
+            </if>
+            <if test="newVersion!=null and newVersion ==1">
+                new_version = 1,
+            </if>
+            <if test="answer != null and answer ==1" >
+                answer = 1,
+            </if>
+            <if test="updateTime!=null">
+                update_time = now(),
+            </if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+
+    <select id="getByUserId" resultMap="BaseResultMap">
+        SELECT id AS id,IFNULL(user_id,0) AS userId,IFNULL(growth_answer,0) AS growthAnswer,IFNULL(choose_lib,0) AS chooseLib,IFNULL(wrong_answer,0) AS wrongAnswer
+        ,IFNULL(arena,0) AS arena,IFNULL(arena_init,0) AS arenaInit,IFNULL(arena_time,0) AS arenaTime,IFNULL(choose_team,0) AS chooseTeam,IFNULL(challenge,0) AS challenge,
+        IFNULL(bag,0) AS bag,IFNULL(feed_pet,0) AS feedPet,IFNULL(other_feed_pet,0) AS otherFeedPet,IFNULL(clean_pet,0) AS cleanPet,
+        IFNULL(new_version,0) AS newVersion,IFNULL(answer,0) AS answer FROM user_x_intro WHERE user_id = #{userId} LIMIT 0,1
+    </select>
+
+</mapper>

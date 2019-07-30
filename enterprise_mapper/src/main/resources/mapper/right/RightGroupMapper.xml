@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.enterprise.mapper.right.RightGroupMapper">
+	<resultMap id="BaseResultMap" type="com.enterprise.base.entity.right.RightGroupEntity">
+		<id column="id" jdbcType="INTEGER" property="id" />
+		<result column="company_id" jdbcType="INTEGER" property="companyId" />
+		<result column="name" jdbcType="VARCHAR" property="name" />
+		<result column="value" jdbcType="INTEGER" property="value" />
+		<result column="is_default" jdbcType="INTEGER" property="isDefault" />
+		<result column="status" jdbcType="INTEGER" property="status" />
+		<result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+		<result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+	</resultMap>
+
+	<sql id="baseColumnList" >
+		id,company_id,name,value,is_default,status,create_time,update_time
+	</sql>
+
+
+	<insert id="createRightGroup" parameterType="com.enterprise.base.entity.right.RightGroupEntity" useGeneratedKeys="true"
+			keyProperty="id">
+		INSERT INTO right_group
+		<trim prefix="(" suffix=")" suffixOverrides="," >
+			<if test="companyId != null" >
+				company_id,
+			</if>
+			<if test="name != null  and name != ''" >
+				name,
+			</if>
+			<if test="value != null" >
+				value,
+			</if>
+			<if test="isDefault != null" >
+				is_default,
+			</if>
+			<if test="status != null" >
+				status,
+			</if>
+			<if test="createTime != null" >
+				create_time,
+			</if>
+			<if test="updateTime != null" >
+				update_time,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides="," >
+			<if test="companyId != null" >
+				#{companyId,jdbcType=INTEGER},
+			</if>
+			<if test="name != null  and name != ''" >
+				#{name,jdbcType=VARCHAR},
+			</if>
+			<if test="value != null" >
+				#{value,jdbcType=INTEGER},
+			</if>
+			<if test="isDefault != null" >
+				#{isDefault,jdbcType=INTEGER},
+			</if>
+			<if test="status != null" >
+				#{status,jdbcType=INTEGER},
+			</if>
+			<if test="createTime != null" >
+				#{createTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="updateTime != null" >
+				#{updateTime,jdbcType=TIMESTAMP},
+			</if>
+		</trim>
+
+	</insert>
+
+	<update id="updateRightGroup">
+		UPDATE right_group
+		<set>
+			<if test="name != null and name != ''">
+				name = #{name},
+			</if>
+			<if test="status != null">
+				status = #{status},
+			</if>
+			<if test="updateTime != null">
+				update_time = now(),
+			</if>
+		</set>
+		where id = #{id}
+	</update>
+
+	<select id="getById" resultMap="BaseResultMap">
+		SELECT * FROM right_group WHERE id = #{id}
+	</select>
+
+
+	<select id="getByCompanyIdAndName" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+		SELECT * FROM right_group where company_id = #{companyId}
+		<if test="status != null">
+			AND status = #{status}
+		</if>
+		<if test="name != null">
+			AND name = #{name}
+		</if>
+		ORDER BY create_time DESC
+	</select>
+
+	<select id="getMaxValueByCompany" resultType="java.lang.Integer">
+		SELECT IFNULL(Max(value),0) FROM right_group WHERE company_id = #{companyId}
+	</select>
+
+	<select id="getSuperManageRightGroup" resultMap="BaseResultMap">
+		SELECT * FROM right_group WHERE company_id = #{companyId}
+		AND is_default=1 AND status = 1 AND value = 1
+	</select>
+
+</mapper>

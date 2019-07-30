@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.enterprise.mapper.community.CommunityInviteMapper">
+	<resultMap id="BaseResultMap" type="com.enterprise.base.entity.CommunityInviteEntity">
+		<id column="id" jdbcType="INTEGER" property="id" />
+		<result column="company_id" jdbcType="INTEGER" property="companyId" />
+		<result column="user_id" jdbcType="INTEGER" property="userId" />
+		<result column="invite_user" jdbcType="INTEGER" property="inviteUser" />
+		<result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+	</resultMap>
+
+	<sql id="baseColumnList" >
+		id,company_id,user_id,invite_user,create_time
+	</sql>
+
+	<insert id="createCommunityInvite" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO community_invite (company_id,user_id,invite_user,create_time)
+		VALUES (#{companyId},#{userId},#{inviteUser},#{createTime})
+	</insert>
+
+	<select id="getByCompanyIdAndUserId" resultMap="BaseResultMap">
+		SELECT *
+		FROM community_invite
+		WHERE  company_id = #{companyId} AND user_id = #{userId}
+	</select>
+
+	<select id="getInviteCount" resultType="java.lang.Integer">
+		SELECT COUNT(id) FROM community_invite
+		WHERE  company_id = #{companyId} AND user_id = #{userId}
+	</select>
+
+	<select id="getByCompanyIdAndInvitedUserId" resultMap="BaseResultMap">
+		SELECT COUNT(id) FROM community_invite
+		WHERE  company_id = #{companyId} AND user_id = #{userId} AND invite_user = #{inviteUser}
+	</select>
+
+</mapper>

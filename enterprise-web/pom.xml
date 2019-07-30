@@ -1,0 +1,223 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <parent>
+        <artifactId>enterprise_train</artifactId>
+        <groupId>com.enterprise</groupId>
+        <version>1.4-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>enterprise-web</artifactId>
+    <name>enterprise-web</name>
+    <version>${enterprise-train.version}</version>
+    <packaging>war</packaging>
+    <url>http://maven.apache.org</url>
+
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.enterprise</groupId>
+            <artifactId>enterprise_base</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.enterprise</groupId>
+            <artifactId>enterprise_mapper</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.enterprise</groupId>
+            <artifactId>enterprise_service</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.enterprise</groupId>
+            <artifactId>enterprise_isv</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.enterprise</groupId>
+            <artifactId>enterprise_util</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>druid</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>tk.mybatis</groupId>
+            <artifactId>mapper</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mybatis</groupId>
+            <artifactId>mybatis-spring</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webmvc</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjweaver</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjrt</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>cglib</groupId>
+            <artifactId>cglib-nodep</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
+            <version>1.1.7</version>
+            <type>jar</type>
+        </dependency>
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.1.7</version>
+        </dependency>
+        <dependency>
+            <groupId>org.logback-extensions</groupId>
+            <artifactId>logback-ext-spring</artifactId>
+            <version>0.1.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+            <version>1.7.12</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.tinygroup</groupId>
+            <artifactId>xstream</artifactId>
+            <version>0.0.12</version>
+        </dependency>
+
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+        </dependency>
+
+        <!--<dependency>-->
+            <!--<groupId>com.alipay</groupId>-->
+            <!--<artifactId>alipay_common</artifactId>-->
+            <!--<version>1.2.6</version>-->
+        <!--</dependency>-->
+
+        <!--<dependency>-->
+            <!--<groupId>com.alipay</groupId>-->
+            <!--<artifactId>alipay_service</artifactId>-->
+            <!--<version>1.2.6</version>-->
+        <!--</dependency>-->
+
+    </dependencies>
+
+    <!--环境切换-->
+    <profiles>
+        <profile>
+            <id>web-dev</id>
+            <properties>
+                <env>dev</env>
+                <logBackPath>/Users/zezhouyang/Desktop/apache-tomcat-8.5.5</logBackPath>
+                <modelType>0</modelType>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>web-real</id>
+            <properties>
+                <env>real</env>
+                <logBackPath>/home/www/tomcat_online/logs</logBackPath>
+                <modelType>2</modelType>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>web-test</id>
+            <properties>
+                <env>test</env>
+                <logBackPath>/home/www/tomcat_dev/logs</logBackPath>
+                <modelType>1</modelType>
+            </properties>
+        </profile>
+
+
+        <profile>
+            <id>localhost-dev</id>
+            <properties>
+                <env>dev</env>
+                <logBackPath>/Users/zezhouyang/Desktop/apache-tomcat-8.5.5/logs</logBackPath>
+                <modelType>3</modelType>
+            </properties>
+        </profile>
+
+    </profiles>
+
+    <build>
+        <finalName>${artifactId}</finalName>
+        <filters>
+            <filter>src/main/resources/${env}/jdbc.properties</filter>
+            <filter>src/main/resources/${env}/redis.properties</filter>
+        </filters>
+
+        <!--项目相关的所有资源路径列表，例如和项目相关的配置文件、属性文件，这些资源被包含在最终的打包文件里。 -->
+        <resources>
+            <resource>
+                <!--描述存放资源的目录，该路径相对POM路径 -->
+                <directory>src/main/java</directory>
+                <!--排除的模式列表 如果<include>与<exclude>划定的范围存在冲突，以<exclude>为准 -->
+                <excludes>
+                    <exclude>**/*.java</exclude>
+                </excludes>
+            </resource>
+
+            <resource>
+                <!--描述存放资源的目录，该路径相对POM路径 -->
+                <directory>src/main/resources/</directory>
+                <!--是否使用参数值代替参数名。参数值取自properties元素或者文件里配置的属性，文件在filters元素里列出。 -->
+                <filtering>true</filtering>
+            </resource>
+
+            <resource>
+                <directory>src/main/resources/model/</directory>
+                <includes>
+                    <include>**/*.xlsx</include>
+                </includes>
+                <targetPath>download</targetPath>
+            </resource>
+
+        </resources>
+    </build>
+</project>

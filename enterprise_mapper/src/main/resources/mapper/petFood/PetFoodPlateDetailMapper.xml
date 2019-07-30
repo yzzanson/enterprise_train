@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.enterprise.mapper.petFood.PetFoodPlateDetailMapper">
+    <resultMap id="BaseResultMap" type="com.enterprise.base.entity.PetFoodPlateDetailEntity">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="company_id" jdbcType="INTEGER" property="companyId"/>
+        <result column="user_id" jdbcType="INTEGER" property="userId"/>
+        <result column="feed_user_id" jdbcType="INTEGER" property="feedUserId"/>
+        <result column="food_count" jdbcType="INTEGER" property="foodCount"/>
+        <result column="type" jdbcType="INTEGER" property="type"/>
+        <result column="status" jdbcType="INTEGER" property="status"/>
+        <result column="consume_plate_id" jdbcType="INTEGER" property="consumePlateId"/>
+        <result column="next_plan_consume_time" jdbcType="TIMESTAMP" property="nextPlanConsumeTime"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+    </resultMap>
+
+    <sql id="baseColumnList">
+		id,company_id,user_id,food_count,type,status,consume_plate_id,next_plan_consume_time,create_time,update_time
+	</sql>
+
+    <insert id="createPetFoodPlateDetail" parameterType="com.enterprise.base.entity.PetFoodPlateDetailEntity"
+            useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO pet_food_plate_detail (company_id,user_id,feed_user_id,food_count,type,status,consume_plate_id,next_plan_consume_time,create_time,update_time)
+		VALUES (#{companyId},#{userId},#{feedUserId},#{foodCount},#{type},#{status},#{consumePlateId},#{nextPlanConsumeTime},now(),now())
+		ON DUPLICATE KEY UPDATE company_id = #{companyId}, user_id=#{userId}, food_count=#{foodCount},update_time = now()
+	</insert>
+
+    <update id="updatePetFoodDetail" parameterType="com.enterprise.base.entity.PetFoodPlateDetailEntity">
+        update pet_food_plate_detail
+        <set>
+            <if test="foodCount >=0 ">
+                food_count = #{foodCount},
+            </if>
+            <if test="updateTime != null">
+                update_time =#{updateTime},
+            </if>
+            <if test="nextPlanConsumeTime != null">
+                next_plan_consume_time = #{nextPlanConsumeTime},
+            </if>
+            <if test="status!=null">
+                status = #{status}
+            </if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <select id="getLatestFeedRecord" resultMap="BaseResultMap">
+        SELECT * FROM pet_food_plate_detail WHERE company_id = #{companyId} AND user_id = #{userId}
+        <if test="type != null">
+           AND type = #{type}
+        </if>
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+        <if test="time != null">
+          AND  <![CDATA[ create_time > #{time} ]]>
+        </if>
+        ORDER BY create_time ASC LIMIT 0,1
+    </select>
+
+    <select id="getPlateConsumeRecord" resultMap="BaseResultMap">
+        SELECT * FROM pet_food_plate_detail WHERE company_id = #{companyId} AND user_id = #{userId}
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+        <if test="plateDetailId != null">
+          AND  consume_plate_id = #{plateDetailId}
+        </if>
+        ORDER BY id ASC LIMIT 0,1
+    </select>
+
+    <select id="getFeedOtherCount" resultType="java.lang.Integer">
+        SELECT COUNT(id) FROM pet_food_plate_detail WHERE company_id = #{companyId} AND user_id = #{userId}
+        AND feed_user_id = #{feedUserId}
+        <if test="type != null">
+            AND type = #{type}
+        </if>
+        <if test="time != null">
+            AND <![CDATA[ DATE_FORMAT(create_time,'%Y-%m-%d') = #{time} ]]>
+        </if>
+    </select>
+
+    <select id="getLatestConsumeRecord" resultMap="BaseResultMap">
+        SELECT * FROM pet_food_plate_detail WHERE company_id = #{companyId} AND user_id = #{userId}
+        AND type = #{type} ORDER BY id DESC LIMIT 0,1
+    </select>
+
+    <select id="getById" resultMap="BaseResultMap">
+        SELECT * FROM pet_food_plate_detail WHERE id = #{id}
+    </select>
+
+    <!--他人喂食-->
+    <select id="getOtherFeedList" resultMap="BaseResultMap">
+        SELECT * FROM pet_food_plate_detail WHERE company_id = {companyId} AND user_id = #{userId}
+        AND status = 1 AND type = 2
+    </select>
+
+    <!--所有的喂食记录-->
+    <select id="getFeedList" resultMap="BaseResultMap">
+        SELECT * FROM pet_food_plate_detail WHERE company_id = #{companyId} AND user_id = #{userId}
+        AND status = 1 AND (type = 1 or type = 2) ORDER BY id ASC
+    </select>
+
+
+</mapper>

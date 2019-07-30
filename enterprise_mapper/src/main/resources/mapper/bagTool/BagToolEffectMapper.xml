@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.enterprise.mapper.bagTool.BagToolEffectMapper">
+	<resultMap id="BaseResultMap" type="com.enterprise.base.entity.BagToolEffectEntity">
+		<id column="id" jdbcType="INTEGER" property="id" />
+		<result column="company_id" jdbcType="INTEGER" property="companyId" />
+		<result column="tool_id" jdbcType="INTEGER" property="toolId" />
+		<result column="tool_people_id" jdbcType="INTEGER" property="toolPeopleId" />
+		<result column="user_id" jdbcType="INTEGER" property="userId" />
+		<result column="effect_user_id" jdbcType="INTEGER" property="effectUserId" />
+		<result column="elimate_id" jdbcType="INTEGER" property="elimateId" />
+		<result column="status" jdbcType="INTEGER" property="status" />
+		<result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+		<result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+	</resultMap>
+
+	<sql id="baseColumnList" >
+		id,company_id,tool_id,tool_people_id,user_id,effect_user_id,elimate_id,status,create_time,update_time
+	</sql>
+
+	<insert id="useTool" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO bag_tool_effect (company_id,tool_id,tool_people_id,user_id,effect_user_id,elimate_id,status,create_time,update_time)
+		VALUES (#{companyId},#{toolId},#{toolPeopleId},#{userId},#{effectUserId},#{elimateId},#{status},#{createTime},#{updateTime})
+	</insert>
+
+	<update id="dispelTool">
+		update bag_tool_effect
+		<set>
+			<if test="status != null">
+				status = #{status}
+			</if>
+		</set>
+		WHERE id = #{id}
+	</update>
+
+	<select id="getUserEffectedTool" resultType="com.enterprise.base.vo.bagtool.BagToolEffectUserVO">
+		SELECT  tool_id AS toolId,count(user_id) AS count FROM bag_tool_effect WHERE company_id = #{companyId} AND status = 1 AND effect_user_id = #{userId}
+		    AND <![CDATA[ tool_id <> 7 ]]>
+			<if test="type != null and type==0">
+				AND <![CDATA[ tool_id <> 6 ]]> AND <![CDATA[ tool_id <> 8 ]]>
+			</if>
+		GROUP BY company_id,effect_user_id,tool_id
+			UNION
+		SELECT  tool_id AS toolId,count(user_id) AS count FROM bag_tool_effect WHERE company_id = #{companyId} AND status = 1 AND user_id = #{userId}
+			AND tool_id = 4
+		GROUP BY company_id,user_id,tool_id
+	</select>
+
+	<!--获取使用道具人姓名-->
+	<select id="getLastToolUser" resultType="java.lang.String">
+	   SELECT u.name FROM bag_tool_effect bt,user u WHERE
+			bt.user_id = u.id AND bt.company_id = #{companyId} AND  bt.status = 1 AND
+			bt.effect_user_id = #{userId} AND  bt.tool_id = #{toolId} ORDER BY bt.id ASC LIMIT 0,1
+	</select>
+
+	<select id="getToolUserCount" resultType="java.lang.Integer">
+		SELECT COUNT(user_id) FROM bag_tool_effect bt,user u WHERE
+			bt.user_id = u.id AND bt.company_id = #{companyId} AND  bt.status = 1 AND
+			bt.effect_user_id = #{userId} AND  bt.tool_id = #{toolId}
+	</select>
+
+
+	<select id="getUserEffectedStatusSelf" resultMap="BaseResultMap">
+		SELECT  *  FROM bag_tool_effect WHERE company_id = #{companyId} AND status = 1 AND user_id = #{userId}
+		AND tool_id = #{toolId}
+	</select>
+
+	<select id="getUserEffectedStatusOther" resultMap="BaseResultMap">
+		SELECT  *  FROM bag_tool_effect WHERE company_id = #{companyId} AND status = 1 AND effect_user_id = #{userId}
+		AND tool_id = #{toolId}
+	</select>
+
+
+
+	<update id="batchUpdate">
+		update bag_tool_effect
+		<trim prefix="set" suffixOverrides=",">
+			<trim prefix="status=case" suffix="end,">
+				<foreach collection="bagToolEffectList" item="item" index="index">
+					<if test="item.status!=null">
+						when id=#{item.id} then #{item.status}
+					</if>
+				</foreach>
+			</trim>
+			<trim prefix="update_time=case" suffix="end,">
+				<foreach collection="bagToolEffectList" item="item" index="index">
+					<if test="item.updateTime!=null">
+						when id=#{item.id} then now()
+					</if>
+				</foreach>
+			</trim>
+			<trim prefix="elimate_id=case" suffix="end,">
+				<foreach collection="bagToolEffectList" item="item" index="index">
+					<if test="item.updateTime!=null">
+						when id=#{item.id} then #{item.elimateId}
+					</if>
+				</foreach>
+			</trim>
+		</trim>
+		where
+		<foreach collection="bagToolEffectList" separator="or" item="item" index="index">
+			id=#{item.id}
+		</foreach>
+	</update>
+
+	<select id="getResusCount" resultType="java.lang.Integer">
+		SELECT COUNT(id) FROM  bag_tool_effect
+		WHERE create_time BETWEEN #{startDate} AND #{endDate}
+		AND tool_type = #{toolType} AND status = 1
+	</select>
+
+	<update id="batchElimateResus">
+		UPDATE bag_tool_effect SET status = #{status} ,update_time = now()
+		WHERE create_time BETWEEN #{startDate} AND #{endDate}
+		AND tool_type = #{toolType} AND status = 1
+	</update>
+
+	<select id="getNegativeEffectList" resultType="com.enterprise.base.vo.bagtool.BagToolEffectTotalVO">
+		SELECT u.name AS name,b.effect_user_id AS userId,COUNT(b.id) AS count FROM bag_tool_effect b,user u  WHERE b.effect_user_id = u.id
+			AND b.company_id = #{companyId}
+			AND NOT EXISTS
+			(SELECT id FROM bag_tool t  WHERE (t.id = 4 OR t.id = 7 OR t.id = 6 OR t.id = 8) AND b.tool_id = t.id )
+			<if test="month != null">
+				AND DATE_FORMAT(b.create_time,'%Y-%m') = #{month}
+			</if>
+			  GROUP BY b.effect_user_id ORDER BY COUNT(b.id) DESC
+	</select>
+
+	<select id="getPositiveEffectList" resultType="com.enterprise.base.vo.bagtool.BagToolEffectTotalVO">
+		SELECT u.name AS name,effect_user_id AS userId ,COUNT(b.id) AS count FROM bag_tool_effect b,user u  WHERE b.effect_user_id = u.id
+		AND b.company_id = #{companyId} AND EXISTS
+			(SELECT id FROM bag_tool t  WHERE (t.id = 4 or t.id = 8) AND b.tool_id = t.id )
+			<if test="month != null">
+				AND DATE_FORMAT(b.create_time,'%Y-%m') = #{month}
+			</if>
+			  GROUP BY b.effect_user_id ORDER BY COUNT(b.id) DESC
+	</select>
+
+	<select id="getBagToolEffectDetail" resultType="com.enterprise.base.vo.bagtool.BagToolEffectTotalDetailVO">
+		SELECT b.tool_id AS toolId,t.tool_name AS toolName,COUNT(b.id) AS count FROM bag_tool_effect b,bag_tool t WHERE
+			b.effect_user_id = #{userId} AND b.tool_id = t.id AND b.company_id = #{companyId}
+		<if test="type==0">
+			AND b.tool_id NOT IN (4,6,7,8)
+		</if>
+		<if test="type==1">
+			AND (b.tool_id = 4 OR b.tool_id = 6 OR b.tool_id = 8)
+		</if>
+		<if test="month != null">
+			AND DATE_FORMAT(b.create_time,'%Y-%m') = #{month}
+		</if>
+		GROUP BY b.tool_id;
+	</select>
+
+	<select id="getEffectedToolList" resultMap="BaseResultMap">
+		SELECT  *  FROM bag_tool_effect WHERE company_id = #{companyId} AND effect_user_id = #{userId}
+		AND <![CDATA[ tool_id <> 7 ]]>
+	</select>
+
+	<select id="getById" resultMap="BaseResultMap">
+		SELECT  *  FROM bag_tool_effect WHERE id = #{id}
+	</select>
+
+</mapper>

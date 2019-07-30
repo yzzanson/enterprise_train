@@ -1,0 +1,565 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.enterprise.mapper.questions.UserXQuestionsMapper">
+    <resultMap id="BaseResultMap" type="com.enterprise.base.entity.UserXQuestionsEntity">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="company_id" jdbcType="INTEGER" property="companyId"/>
+        <result column="user_id" jdbcType="INTEGER" property="userId"/>
+        <result column="question_id" jdbcType="INTEGER" property="questionId"/>
+        <result column="type" jdbcType="INTEGER" property="type"/>
+        <result column="answer_status" jdbcType="INTEGER" property="answerStatus"/>
+        <result column="answer_time" jdbcType="INTEGER" property="answerTime"/>
+        <result column="tool_type" jdbcType="INTEGER" property="toolType"/>
+        <result column="status" jdbcType="INTEGER" property="status"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+    </resultMap>
+
+    <sql id="baseColumnList">
+		id,company_id,user_id,question_id,type,answer_status,answer_time,tool_type,status,create_time,update_time
+	</sql>
+
+    <insert id="createOrUpdateUserXQuestion" parameterType="com.enterprise.base.entity.UserXQuestionsEntity"
+            useGeneratedKeys="true" keyProperty="id">
+        <![CDATA[
+
+
+          insert into user_x_questions(company_id,user_id,question_id, type,answer_status,status, answer_time, tool_type ,create_time, update_time)
+           values
+          (#{companyId,jdbcType=INTEGER},#{userId,jdbcType=INTEGER},#{questionId,jdbcType=INTEGER},#{type,jdbcType=INTEGER},#{answerStatus,jdbcType=INTEGER},
+          #{status,jdbcType=INTEGER},  #{answerTime,jdbcType=INTEGER}, #{toolType,jdbcType=INTEGER}, now(),now())
+
+
+        ]]>
+    </insert>
+
+    <insert id="createOrUpdateUserXQuestionNew" parameterType="com.enterprise.base.entity.UserXQuestionsEntity"
+            useGeneratedKeys="true" keyProperty="id">
+        <![CDATA[
+
+
+          insert into user_x_questions(company_id,user_id,question_id,type,answer_status,tool_type,status, create_time, update_time)
+           values
+          (#{companyId,jdbcType=INTEGER},#{userId,jdbcType=INTEGER},#{questionId,jdbcType=INTEGER},#{type,jdbcType=INTEGER},#{answerStatus,jdbcType=INTEGER},
+          #{toolType,jdbcType=INTEGER},#{status,jdbcType=INTEGER},now(),now())
+
+
+        ]]>
+    </insert>
+
+
+    <update id="updateUserXQuestion" parameterType="com.enterprise.base.entity.UserXQuestionsEntity">
+        update user_x_questions
+        <set>
+            <if test="answerStatus != null and answerStatus != ''">
+                answer_status = #{answerStatus},
+            </if>
+            <if test="answerTime != null and answerTime != ''">
+                answerTime = #{answerTime},
+            </if>
+            <if test="status != null and status != ''">
+                status = #{status},
+            </if>
+            <if test="updateTime != null">
+                update_time = now(),
+            </if>
+            <if test="toolType != null">
+                tool_type= #{toolType},
+            </if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!--
+    <select id="getTotalQuestionCount" resultType="java.lang.Integer">
+        SELECT COUNT(id)
+        FROM user_x_questions WHERE
+        status = 1 AND question_id = #{questionId}
+        <if test="answerStatus != null and answerStatus != ''">
+            AND answer_status = #{answerStatus}
+        </if>
+    </select>
+    -->
+
+    <!--
+    <select id="getTotalQuestionAllCount" resultType="java.lang.Integer">
+        SELECT COUNT(id)
+        FROM user_x_questions WHERE
+        status = 1 AND question_id IN
+        <foreach collection="questionList" item="item" open="(" index="index" separator="," close=")">
+            #{item}
+        </foreach>
+        <if test="answerStatus != null and answerStatus != ''">
+            AND answer_status = #{answerStatus}
+        </if>
+    </select>
+    -->
+
+    <select id="isUserAnswered" resultType="java.lang.Integer">
+        SELECT COUNT(id)
+        FROM user_x_questions WHERE
+        status = 1 AND user_id = #{userId} AND type = 0
+    </select>
+
+    <!--用户周排行榜
+    <select id="getWeekAnswerRankList" resultType="com.enterprise.base.vo.UserAnswerRankVO">
+        select total.user_id AS userId,total.count AS answerCount  from (
+            select user_id,count(question_id) count from(
+            select user_id,question_id from user_x_questions where
+             question_id in (
+                select id from questions where library_id in (
+                  select id from questions_library where company_id = #{companyId}
+                  UNION
+                  select ql.id from company_x_library cx,questions_library ql where cx.library_id = ql.id AND cx.status = 1 AND cx.company_id = #{companyId}
+                )
+              )
+             and status =1 and answer_status = 1
+             and create_time between #{startTime} and #{endTime}
+            group by user_id,question_id
+            ) as a group by user_id
+        ) total order by total.count desc
+    </select>
+    -->
+
+    <!--
+    SELECT a.user_id,COUNT(a.id) answer_count,0 AS raise_count FROM(
+                 SELECT user_id,count(id) AS id FROM user_x_questions WHERE company_id = #{companyId} AND status = 1 AND
+                 answer_status = 1
+                AND create_time BETWEEN #{startTime} AND #{endTime} GROUP BY user_id,question_id
+                ) AS a GROUP BY user_id
+    -->
+
+
+    <select id="getWeekAnswerRankList2" resultType="com.enterprise.base.vo.UserAnswerRankVO">
+        SELECT SS.userId,SS.answerCount,SS.raiseCount FROM(
+
+        SELECT AA.userId,AA.answerCount,AA.raiseCount,0 AS level FROM(
+
+        SELECT A.userId AS userId,SUM(A.answerCount) AS answerCount,SUM(A.raiseCount) AS raiseCount FROM(
+
+        SELECT ANS.user_id AS userId,SUM(answer_count) AS answerCount,0 AS raiseCount FROM(
+
+        SELECT a.user_id,COUNT(a.id) answer_count,0 AS raise_count FROM(
+
+        SELECT user_id,count(id) AS id FROM user_x_questions WHERE company_id =#{companyId} AND status = 1 AND
+        answer_status = 1 AND ( <![CDATA[ tool_type <> 2 ]]> or tool_type is null )
+        AND create_time BETWEEN #{startTime} AND #{endTime} GROUP BY user_id,question_id
+        ) AS a GROUP BY user_id
+        UNION ALL
+
+        SELECT a.user_id,CEILING(COUNT(a.id)/2) answer_count,0 AS raise_count FROM(
+        SELECT user_id,count(id) AS id FROM user_x_questions WHERE company_id =#{companyId} AND status = 1 AND
+        answer_status = 1 AND tool_type = 2
+        AND create_time BETWEEN #{startTime} AND #{endTime} GROUP BY user_id,question_id
+        ) AS a GROUP BY user_id
+
+        UNION ALL
+
+        SELECT effect_user_id,50 * COUNT(id) AS answer_count,0 AS raise_count
+        FROM bag_tool_effect WHERE company_id = #{companyId} AND status = 1 AND tool_id = 6
+        AND create_time BETWEEN #{startTime} AND #{endTime}
+        GROUP BY effect_user_id
+
+
+        ) ANS GROUP BY userId
+
+        UNION
+
+        SELECT praise_user_id,0,COUNT(id) AS raise_count FROM rank_praise WHERE company_id = #{companyId} GROUP BY
+        praise_user_id,company_id
+
+
+        ) A GROUP BY A.userId ORDER BY A.answerCount DESC,A.raiseCount DESC
+
+        ) AA
+        <if test="petUserList!=null and petUserList.size>0">
+            UNION ALL
+            SELECT B.* FROM(
+            SELECT user_id AS userId,0 AS answerCount,0 AS raiseCount,level AS level FROM my_pet WHERE status = 1
+            AND user_id IN
+            <foreach collection="petUserList" item="item" open="(" index="index" separator="," close=")">
+                #{item}
+            </foreach>
+            ORDER BY level DESC LIMIT 100000
+            ) B
+        </if>
+        <if test="userOpenList!=null and userOpenList.size>0">
+            UNION ALL
+            SELECT C.*,0 AS level FROM(
+            SELECT user_id AS userId,0 AS answerCount,0 AS raiseCount FROM user_x_open WHERE status = 1
+            AND user_id IN
+            <foreach collection="userOpenList" item="item" open="(" index="index" separator="," close=")">
+                #{item}
+            </foreach>
+            GROUP BY user_id ORDER BY COUNT(user_id) DESC LIMIT 100000
+            ) C
+        </if>
+        <if test="remainUserList!=null and remainUserList.size>0">
+            UNION ALL
+            SELECT D.*,0 AS level FROM(
+            SELECT user_id AS userId,0 AS answerCount,0 AS raiseCount FROM user_x_company WHERE status = 1
+            AND user_id IN
+            <foreach collection="remainUserList" item="item" open="(" index="index" separator="," close=")">
+                #{item}
+            </foreach>
+            GROUP BY user_id ORDER BY COUNT(user_id) DESC LIMIT 100000
+            ) D
+        </if>
+        ) SS ORDER BY SS.answerCount DESC,SS.raiseCount,SS.level DESC
+    </select>
+
+
+    <select id="getWeekAnswerRankList3" resultType="com.enterprise.base.vo.rank.UserPetWeightRankVO">
+        SELECT SS.userId,SS.answerCount AS answerCount,SS.certCount AS certCount,SS.titleCount AS titleCount FROM(
+          SELECT A.* FROM(
+           SELECT AA.userId,AA.answerCount,IFNULL(BB.count,0) AS certCount ,IFNULL(CC.count,0) AS titleCount FROM(
+              SELECT A.userId,COUNT(A.id) AS answerCount FROM(
+               SELECT distinct ux.question_id AS id,ux.user_id AS userId  FROM user_x_questions ux , user_x_company uc WHERE ux.company_id = #{companyId}
+               AND ux.status = 1 AND ux.answer_status = 1 AND ux.user_id = uc.user_id AND uc.status = 1
+               AND uc.corp_id =  #{corpId}
+              ) A GROUP BY A.userId
+
+            ) AA LEFT JOIN(
+              SELECT ug.user_id AS userId,count(ug.id) AS count FROM user_grain_activity ug WHERE ug.company_id = #{companyId}
+              GROUP BY user_id
+            ) BB on AA.userId = BB.userId LEFT JOIN (
+              SELECT ux.user_id AS userId,count(ux.id) AS count FROM user_x_title ux WHERE ux.company_id = #{companyId} and
+              status = 1 GROUP BY userId
+            ) CC on AA.userId = CC.userId ORDER BY answerCount DESC,certCount DESC,titleCount DESC LIMIT 100000
+          ) A
+        <if test="petUserList!=null and petUserList.size>0">
+            UNION ALL
+            SELECT B.* FROM(
+            SELECT user_id AS userId,0 AS answerCount,0 AS certCount,0 AS titleCount FROM my_pet WHERE status = 1
+            AND user_id IN
+            <foreach collection="petUserList" item="item" open="(" index="index" separator="," close=")">
+                #{item}
+            </foreach>
+            ORDER BY level DESC LIMIT 100000
+            ) B
+        </if>
+
+        <if test="remainUserList!=null and remainUserList.size>0">
+            UNION ALL
+            SELECT D.* FROM(
+            SELECT user_id AS userId,0 AS answerCount,0 AS certCount,0 AS titleCount FROM user_x_company WHERE status = 1
+            AND user_id IN
+            <foreach collection="remainUserList" item="item" open="(" index="index" separator="," close=")">
+                #{item}
+            </foreach>
+            GROUP BY user_id ORDER BY COUNT(user_id) DESC LIMIT 100000
+            ) D
+        </if>
+        ) SS
+    </select>
+
+    <!--学习排行-->
+    <select id="getStudyRank" resultType="com.enterprise.base.vo.rank.UserRankVO">
+      SELECT t.user_id AS userId,t.answerCount AS studyCount,t.rightAnswerCount AS rightStudyCount,t.titleCount AS titleCount,u.name FROM (
+        SELECT a.user_id,a.answerCount,IFNULL(b.rightAnswerCount,0) AS rightAnswerCount,IFNULL(c.titleCount,0) AS titleCount FROM(
+          SELECT ux.user_id,COUNT(ux.id) AS answerCount FROM user_x_questions ux,user_x_company uc,isv_tickets  isv,questions q,questions_library  ql
+          WHERE ux.user_id = uc.user_id AND uc.corp_id = isv.corp_id AND ux.status = 1 AND uc.status = #{status} AND ux.company_id = isv.company_id
+          AND ux.question_id = q.id AND q.library_id = ql.id AND ql.subject in (1,2)
+        AND ux.company_id = #{companyId} AND ux.type = 0 GROUP BY ux.user_id ) AS a
+
+        LEFT JOIN (
+
+        SELECT ux.user_id,COUNT(ux.id) AS rightAnswerCount FROM user_x_questions ux,user_x_company uc,isv_tickets  isv,questions q,questions_library  ql
+          WHERE ux.user_id = uc.user_id AND uc.corp_id = isv.corp_id AND ux.status = 1 AND ux.company_id = isv.company_id
+          AND ux.question_id = q.id AND q.library_id = ql.id AND ql.subject in (1,2)
+          AND ux.company_id = #{companyId} AND ux.answer_status =  1 AND ux.type = 0 GROUP BY ux.user_id ) AS b
+          ON a.user_id = b.user_Id
+
+        LEFT JOIN (
+
+        SELECT user_id,COUNT(ux.id) AS titleCount FROM user_x_title ux WHERE company_id = #{companyId} AND status = 1 GROUP BY company_id,user_id) AS c
+          ON a.user_id = c.user_id
+      ) AS t INNER JOIN user u ON t.user_id = u.id
+        <if test="search != null and search != ''">
+            WHERE u.name LIKE CONCAT('%',#{search},'%')
+        </if>
+      ORDER BY t.answerCount DESC,t.rightAnswerCount DESC,t.titleCount DESC
+    </select>
+
+
+    <!--学习排行-->
+    <select id="getUserLibraryList" resultType="java.lang.Integer">
+        SELECT library_id FROM(
+          SELECT q.library_id FROM(
+            SELECT ux.question_id FROM user_x_questions ux,questions q WHERE ux.question_id  = q.id AND (ux.status = 1  OR ux.status = 2 OR ux.status = 0)
+	        AND ux.company_id  = #{companyId} AND ux.user_id  = #{userId} AND ux.type = 0 GROUP BY ux.question_id
+          ) a,questions q WHERE a.question_id = q.id GROUP BY q.library_id
+        ) t,questions_library ql WHERE t.library_id = ql.id AND ql.subject = #{type}
+    </select>
+
+    <!--单个题库学习次数-->
+    <select id="getStudyCountByLibraryId" resultType="java.lang.Integer">
+        SELECT COUNT(ux.id) AS answerCount FROM user_x_questions ux
+          WHERE ux.user_id = #{userId} AND  ux.status = 1
+          AND ux.company_id = #{companyId} AND ux.type = 0 AND ux.question_id IN (
+            SELECT id FROM questions WHERE library_id = #{libraryId}
+          )
+    </select>
+
+    <!--单个题库掌握知识点数
+    SELECT COUNT(ux.id) AS rightAnswerCount FROM user_x_questions ux
+          WHERE ux.user_id = #{userId} AND ux.status = 1
+          AND ux.company_id = #{companyId} AND ux.type = 0 AND ux.answer_status =  1
+           AND ux.question_id IN (
+            SELECT id FROM questions WHERE library_id = #{libraryId}
+          )
+    -->
+    <select id="getRightStudyCountByLibraryId" resultType="java.lang.Integer">
+         SELECT COUNT(ux.id) AS rightAnswerCount FROM user_x_questions ux,user_x_company uc,isv_tickets  isv,questions q,questions_library  ql
+          WHERE ux.user_id = uc.user_id AND uc.corp_id = isv.corp_id AND ux.status = 1 AND ux.company_id = isv.company_id
+          AND ux.question_id = q.id AND q.library_id = ql.id  AND ql.id = #{libraryId}
+          AND ux.company_id = #{companyId} AND ux.answer_status =  1 AND ux.type = 0 AND ux.user_id = #{userId}
+    </select>
+
+    <!--题库热度-->
+    <select id="getQuestionLibraryByStudyCount" resultType="com.enterprise.base.vo.rank.QuestionLibraryHeatRank">
+        SELECT a.libraryId,a.libraryName,a.studyCount FROM(
+          SELECT ql.id AS libraryId,ql.name AS libraryName,COUNT(ux.id) AS studyCount FROM user_x_questions ux,questions q,questions_library ql
+           WHERE ux.status = 1 AND ux.company_id = #{companyId} AND ux.question_id = q.id
+            AND q.library_id = ql.id AND ql.status = 1 AND ql.subject = #{type}
+            GROUP BY ql.id,ql.name
+        ) AS a
+        <if test="search != null and search != ''">
+            WHERE a.libraryName LIKE CONCAT('%',#{search},'%')
+        </if>
+        ORDER BY a.studyCount DESC
+    </select>
+
+    <!--获取用户所有回答正确的题目数量-->
+    <select id="getTotalCorrectCountByLibraryId" resultType="java.lang.Integer">
+        SELECT IFNULL(COUNT(a.question_id),0) FROM(
+        SELECT DISTINCT(question_id) AS question_id FROM user_x_questions WHERE
+        status = 1 AND type = 0 AND user_id = #{userId} AND answer_status = 1 AND company_id = #{companyId} AND
+        question_id IN (SELECT id FROM questions WHERE library_id = #{libraryId} AND status = 1)
+        ) a
+    </select>
+
+    <!--获取目前为止尚未答对的题目列表-->
+    <select id="getwrongAnsweredQuestions" resultType="java.lang.Integer">
+        select distinct(question_id) from user_x_questions where user_id = #{userId} and type = 0 and company_id = #{companyId} and question_id in (
+          select id from questions where library_id =#{libraryId} and status = 1) and answer_status = 2 and question_id not in (
+            select question_id from user_x_questions where user_id = #{userId} and type = 0 and question_id in (
+               select id from questions where library_id =#{libraryId} and status = 1
+            ) and answer_status = 1 and company_id = #{companyId} and status = 1
+          ) order by question_id
+    </select>
+
+    <select id="getIsAnswerUser" resultMap="BaseResultMap">
+        SELECT ux.company_id AS companyId,ux.user_id AS userId
+        FROM user_x_questions ux WHERE question_id IN
+        <foreach collection="questionList" index="index" item="item"
+                 separator="," open="(" close=")">
+            #{item,jdbcType=BIGINT}
+        </foreach>
+        AND type = 0 AND answer_status = 1 AND status = 1
+        GROUP BY company_id,user_id
+    </select>
+
+    <!--获取未答过的一题新题-->
+    <select id="getNewQuesion" resultType="java.lang.Integer">
+        SELECT q.id from questions q,questions_library ql WHERE NOT EXISTS (
+        SELECT question_id FROM user_x_questions uxx WHERE uxx.status = 1 AND uxx.user_id = #{userId}
+        AND q.id = uxx.question_id AND uxx.type = 0 AND uxx.company_id = #{companyId}
+        ) AND q.library_id = ql.id AND ql.id = #{libraryId} AND q.status = 1
+        <if test="type==null || type==0">
+            ORDER BY rand() LIMIT 0,1
+        </if>
+        <if test="type!=null and type==1">
+            ORDER BY q.id LIMIT 0,1
+        </if>
+    </select>
+
+
+    <select id="getIsCorrectedAnsweredBefore" resultType="java.lang.Integer">
+        SELECT count(id) from user_x_questions  WHERE user_id =#{userId} AND question_id = #{questionId}
+        AND status = 1 AND answer_status = 1  AND type = 0 AND company_id = #{companyId}
+    </select>
+
+    <select id="getTotalAnsweredByCompanyIdAndDate" resultType="java.lang.Integer">
+        SELECT IFNULL(COUNT(id),0) FROM user_x_questions WHERE question_id IN (
+        SELECT id FROM questions WHERE library_id IN (
+        SELECT id FROM questions_library WHERE company_id = #{companyId}
+        UNION ALL
+        SELECT cx.library_id FROM company_x_library cx,questions_library ql where cx.library_id = ql.id AND cx.status =
+        1 AND cx.company_id = #{companyId}
+        )
+        ) AND status = 1 AND company_id = #{companyId}
+        <if test="date != null and date != ''">
+            AND DATE_FORMAT(create_time,'%Y-%m-%d') = #{date}
+        </if>
+    </select>
+
+    <select id="getAnsweredByCompanyIdAndDate" resultType="java.lang.Integer">
+        SELECT IFNULL(COUNT(id),0) FROM user_x_questions WHERE (status = 1  or status = 2) AND company_id = #{companyId}
+        AND create_time between #{startDate} and #{endDate}
+    </select>
+
+    <select id="getTotalAnsweredByDate" resultType="java.lang.Integer">
+        SELECT IFNULL(COUNT(id),0) FROM user_x_questions WHERE (status = 1 OR status = 2)
+        <if test="date != null">
+            AND DATE_FORMAT(create_time,'%Y-%m-%d') = #{date}
+        </if>
+    </select>
+
+    <update id="batchUpdateStatus">
+        update user_x_questions
+        <set>
+            <if test="status != null">
+                status = #{status}
+            </if>
+        </set>
+        WHERE question_id = #{questionId} AND answer_status = 1 AND status = 1
+        AND type = 0
+    </update>
+
+
+    <select id="getUserCorrectQuestionsByLibraryId" resultType="java.lang.Integer">
+        SELECT IFNULL(count(DISTINCT(question_id)),0) FROM user_x_questions ux,questions q WHERE ux.question_id = q.id and q.library_id = #{libraryId} and q.status = 1 and ux.status = 1 AND ux.user_id = #{userId} AND ux.answer_status = 1
+        AND  ux.type = 0 AND ux.company_id =  #{companyId}
+    </select>
+
+
+    <select id="getAnsweredUserList" resultType="java.lang.Integer">
+        SELECT SA.user_id  FROM(
+          SELECT DISTINCT(user_id) FROM user_x_questions WHERE company_id = #{companyId} AND status = 1 AND answer_status = 1
+          AND create_time BETWEEN #{startDate} AND #{endDate}
+        ) SA GROUP BY SA.user_id
+    </select>
+
+    <select id="getAnsweredUserList2" resultType="java.lang.Integer">
+        SELECT SA.user_id  FROM(
+          SELECT DISTINCT(ux.user_id) FROM user_x_questions ux,user_x_company uc WHERE
+          ux.user_id = uc.user_id AND ux.company_id = #{companyId} AND ux.status = 1 AND ux.answer_status = 1
+          AND uc.corp_id = #{corpId} AND uc.status = 1
+        ) SA GROUP BY SA.user_id
+    </select>
+
+    <select id="getAnsweredUserListGroup" resultMap="BaseResultMap">
+        SELECT company_id AS companyId,user_id AS userId FROM user_x_questions WHERE status = 1
+        AND answer_status = 2 AND question_id IN
+        <foreach collection="questionList" item="item" open="(" index="index" separator="," close=")">
+            #{item}
+        </foreach>
+        GROUP BY company_id AND user_id
+    </select>
+
+
+    <select id="getAnsweredUserListByLibraryId" resultType="com.enterprise.base.vo.UserCompanyLibraryVO">
+        SELECT company_id AS companyId,user_id AS userId FROM user_x_questions WHERE question_id IN (SELECT id FROM questions WHERE status = 1 AND library_id = #{libraryId})
+        GROUP BY company_id,user_id
+    </select>
+
+    <!--同步用-->
+    <select id="getTotalCountInDB" resultType="java.lang.Integer">
+        SELECT IFNULL(COUNT(id),0) FROM user_x_questions
+    </select>
+
+    <select id="getCountRecord" resultMap="BaseResultMap">
+        SELECT * FROM user_x_questions LIMIT #{start},#{end}
+    </select>
+
+    <update id="batchUpdate" parameterType="java.util.List">
+        update user_x_questions
+        set company_id =
+        <foreach collection="userXQuestionList" item="item" index="index" separator=" " open="case ID" close="end">
+            when #{item.id} then #{item.companyId}
+        </foreach>
+        where id in
+        <foreach collection="userXQuestionList" index="index" item="item"
+                 separator="," open="(" close=")">
+            #{item.id,jdbcType=BIGINT}
+        </foreach>
+    </update>
+
+    <select id="getTotalAnswerUserCount" resultType="java.lang.Integer">
+        SELECT COUNT(a.user_id) FROM(
+        SELECT company_id,user_id FROM user_x_questions WHERE (status = 1 OR status = 2)
+        <if test="companyId != null">
+            AND company_id = #{companyId}
+        </if>
+        <if test="date != null">
+            AND DATE_FORMAT(create_time,'%Y-%m-%d') = #{date}
+        </if>
+        GROUP BY company_id,user_id
+        ) AS a
+    </select>
+
+
+    <select id="getCorrectAnswerUserList" resultMap="BaseResultMap">
+        SELECT company_id,question_id,user_id FROM user_x_questions WHERE questionId = #{questionId}
+        <if test="companyId != null">
+            AND company_id = #{companyId}
+        </if>
+        AND (status = 1 OR status = 2) AND answer_status = 1
+        GROUP BY company_id AND user_id
+    </select>
+
+    <select id="getCorrectCount" resultType="java.lang.Integer">
+       SELECT COUNT(id) FROM user_x_questions ux WHERE id IN (
+          SELECT id FROM user_x_questions WHERE company_id = #{companyId} AND
+          question_id = #{questionId} AND (status = 1 OR status =2)AND question_id NOT IN (
+          SELECT id FROM user_x_questions WHERE company_id = #{companyId} AND question_id =  #{questionId}
+          AND answer_status = 2)
+          GROUP BY company_id,user_id,question_id HAVING COUNT(id) = 1
+       ) AND ux.answer_status = 1
+    </select>
+
+
+    <select id="getQuestionAnswerUserCount" resultType="java.lang.Integer">
+        SELECT COUNT(a.user_id) FROM (
+          SELECT user_id FROM user_x_questions  WHERE company_id  = #{companyId}
+          AND question_id  = #{questionId} group by company_id ,user_id
+        ) AS a
+    </select>
+
+    <select id="getWrongAnswerList" resultType="com.enterprise.base.vo.UserVO3">
+        SELECT user_id AS id FROM user_x_questions WHERE company_id  = #{companyId}
+          AND question_id  = #{questionId} AND answer_status = 2 AND (status = 1 OR status =2)
+          GROUP BY company_id,user_id
+    </select>
+
+    <select id="getQuestionAnswerCount" resultType="java.lang.Integer">
+        SELECT COUNT(id) FROM user_x_questions WHERE company_id  = #{companyId}
+          AND question_id  = #{questionId} AND (status = 1 OR status = 2)
+    </select>
+
+    <select id="getUserwrongAnsweredQuestionList" resultType="java.lang.Integer">
+        SELECT question_id FROM user_x_questions ux,questions q WHERE
+          ux.question_id = q.id and ux.company_id  =  #{companyId}
+          AND ux.type = 0 AND ux.user_id = #{userId} AND q.library_id = #{libraryId} AND q.status = 1
+          AND ux.answer_status = 2
+          GROUP BY ux.question_id ORDER BY ux.id ASC
+    </select>
+
+    <select id="getWrongAnswerCountByUserId" resultType="java.lang.Integer">
+        SELECT COUNT(id) FROM user_x_questions WHERE company_id  = #{companyId}
+          AND type = 0 AND user_id = #{userId} AND question_id = #{questionId}
+          AND answer_status = 2
+    </select>
+
+    <select id="getHourUserAnswerList" resultType="java.lang.String">
+        SELECT concat(concat('*', mid(u.name,2,length(u.name))),'获得',#{gainCount},'g猫粮') FROM user_x_questions ux,user u  WHERE ux.user_id = u.id
+        AND ux.type = 0 AND ux.answer_status = 1
+        AND ux.create_time >= date_sub(now(), interval 1 hour)
+        ORDER BY ux.id DESC LIMIT 50
+    </select>
+
+    <select id="getHourUserAnswerList2" resultType="java.lang.String">
+        SELECT concat(concat('*', mid(u.name,2,length(u.name))),'获得',#{gainCount},'g猫粮') FROM user_x_questions ux,user u  WHERE ux.user_id = u.id
+        AND ux.type = 0 AND ux.answer_status = 1
+        ORDER BY ux.id DESC LIMIT 50
+    </select>
+
+    <select id="getLastAnswerTime" resultMap="BaseResultMap">
+        SELECT * FROM user_x_questions WHERE company_id = #{companyId} AND user_id = #{userId}
+        AND question_id IN (SELECT id FROM questions WHERE  status = 1 AND library_id = #{libraryId})
+        ORDER BY id DESC LIMIT 0,1
+    </select>
+
+
+</mapper>

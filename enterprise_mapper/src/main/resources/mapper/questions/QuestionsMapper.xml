@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.enterprise.mapper.questions.QuestionsMapper">
+    <resultMap id="BaseResultMap" type="com.enterprise.base.entity.QuestionsEntity">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="library_id" jdbcType="INTEGER" property="libraryId"/>
+        <result column="label_id" jdbcType="INTEGER" property="labelId"/>
+        <result column="operator" jdbcType="INTEGER" property="operator"/>
+        <result column="type" jdbcType="INTEGER" property="type"/>
+        <result column="description" jdbcType="VARCHAR" property="description"/>
+        <result column="options" jdbcType="VARCHAR" property="options"/>
+        <result column="answer" jdbcType="VARCHAR" property="answer"/>
+        <result column="answer_desc" jdbcType="VARCHAR" property="answerDesc"/>
+        <result column="restudy" jdbcType="INTEGER" property="restudy"/>
+        <result column="parent_id" jdbcType="INTEGER" property="parentId"/>
+        <result column="blank_index" jdbcType="INTEGER" property="blankIndex"/>
+        <result column="status" jdbcType="INTEGER" property="status"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+    </resultMap>
+
+    <sql id="baseColumnList">
+		id,library_id,label_id,operator,type,description,options,answer,answer_desc,restudy,blank_index,status,create_time,update_time
+	</sql>
+
+    <insert id="createOrUpdateQuestion" parameterType="com.enterprise.base.entity.QuestionsEntity"
+            useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO questions (library_id,operator, type, label_id,description,options,answer,answer_desc,restudy,blank_index,status, create_time, update_time)
+		VALUES (#{libraryId}, #{operator},#{type},#{labelId},#{description},#{options},#{answer},#{answerDesc},#{restudy},#{blankIndex},#{status},now(),now())
+		ON DUPLICATE KEY UPDATE label_id=#{labelId},description=#{description},options = #{options},answer = #{answer}, answer_desc = #{answerDesc}, status = #{status}, update_time = now();
+	</insert>
+
+    <insert id="insertQuestionsFromOtherLibrary">
+		insert into questions(library_id, operator,type, description, options, answer, answer_desc, parent_id,blank_index,status, create_time, update_time)
+		select #{toLibraryId},#{userId}, q.type, q.description, q.options, q.answer, q.answer_desc,q.id,q.blank_index,q.status,now(), now()
+		from questions q where q.library_id = #{fromLibraryId}
+	</insert>
+
+    <select id="getTotalCountByLibraryId" resultType="java.lang.Integer">
+		SELECT COUNT(id) FROM questions WHERE library_id = #{libraryId} AND status = 1
+	</select>
+
+    <select id="getQuestionIdsByParent" resultType="java.lang.Integer">
+		SELECT id FROM questions WHERE parent_id = #{parentId}
+	</select>
+
+    <select id="getById" resultMap="BaseResultMap">
+		SELECT * FROM questions WHERE id = #{id}
+	</select>
+
+    <select id="getQuestionList" resultType="com.enterprise.base.vo.QuestionVO">
+        SELECT q.id AS id,q.description AS description,case when q.type = 1 then '单选题'
+        when q.type = 2 then '多选题' when q.type = 3 then '判断题' when q.type = 4 then '填空题'
+        else '其他' END AS type,options AS options,label_id AS labelId,answer AS answer,blank_index AS blankIndex,
+        q.answer_desc AS answerDesc FROM
+        questions q WHERE library_id = #{libraryId}
+        <if test="description != null and description != ''">
+            AND (q.description like '%${description}%' )
+        </if>
+
+        <if test="labelList != null and labelList.size>0">
+            AND q.label_id IN (SELECT id FROM question_label WHERE library_id = #{libraryId} AND
+            <foreach collection="labelList" index="index" item="item"
+                     separator="or" open="(" close=")">
+                label_name LIKE '%${item}%'
+            </foreach>
+            )
+        </if>
+        AND q.status =1 ORDER BY q.id DESC
+    </select>
+
+    <update id="batchDelete" parameterType="java.util.List">
+        update questions set status=0
+        where id in
+        <foreach collection="ids" index="index" item="item"
+                 separator="," open="(" close=")">
+            #{item,jdbcType=BIGINT}
+        </foreach>
+    </update>
+
+    <!--id,library_id,operator,type,description,options,answer,answer_desc,status,create_time,update_time-->
+    <update id="updateQuestion" parameterType="com.enterprise.base.entity.QuestionsEntity">
+        update questions
+        <set>
+            <if test="description != null and description != ''">
+                description = #{description},
+            </if>
+            <if test="type != null and type != ''">
+                type = #{type},
+            </if>
+            <if test="options != null and options != ''">
+                options = #{options},
+            </if>
+            <if test="answer != null and answer != ''">
+                answer = #{answer},
+            </if>
+            <if test="answerDesc != null">
+                answer_desc = #{answerDesc},
+            </if>
+            <if test="updateTime != null">
+                update_time = now(),
+            </if>
+            <if test="labelId != null">
+                label_id = #{labelId},
+            </if>
+            <if test="restudy != null">
+                restudy= #{restudy},
+            </if>
+            <if test="blankIndex != null">
+                blank_index= #{blankIndex},
+            </if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+
+    <select id="getQuestionDetailList" resultType="com.enterprise.base.vo.QuestionVO1">
+		SELECT q.id AS id,q.library_id AS libraryId,q.type AS type,ql.label_name AS labelName,
+		q.description AS description,q.options AS options,q.answer AS answer,q.answer_desc AS answerDesc,
+		q.restudy AS restudy,q.parent_id AS parentId,q.label_id AS labelId,IFNULL(blank_index,1) AS blankIndex
+		  FROM questions q LEFT JOIN question_label ql ON q.label_id = ql.id WHERE q.library_id = #{libraryId}
+		AND q.status =1 ORDER BY id ASC
+	</select>
+
+    <select id="getNewBieQuestion" resultMap="BaseResultMap">
+		SELECT q.*  FROM questions q,questions_library ql WHERE
+		q.status = 1 AND ql.status = 1 AND q.library_id = ql.id
+		AND ql.company_id = #{companyId} ORDER BY ql.id,q.id LIMIT 0,1
+	</select>
+
+    <select id="getNewBieQuestion2" resultMap="BaseResultMap">
+        SELECT q.*  FROM questions q WHERE library_id  IN (
+          SELECT ql.id FROM questions_library ql ,company_x_library cx  WHERE  ql.id = cx.library_id
+          AND cx.company_id  = #{companyId} AND ql.status = 1 AND cx.status = 1)
+          AND q.status = 1 ORDER BY q.id limit 0,1
+	</select>
+
+
+    <select id="getQuestionIdsByLibrary" resultType="java.lang.Integer">
+		SELECT q.id  FROM questions q WHERE
+		q.status = 1 AND q.library_id = #{libraryId} AND status = 1
+		ORDER BY rand() LIMIT #{count}
+	</select>
+
+    <select id="getOrderQuestionIdsByLibrary" resultType="java.lang.Integer">
+		SELECT q.id  FROM questions q WHERE
+		q.status = 1 AND q.library_id = #{libraryId} AND status = 1
+		ORDER BY id ASC
+	</select>
+
+
+    <insert id="batchInsertQuestions" parameterType="java.util.List">
+        insert into questions (library_id,label_id,operator, type, description,
+        options,answer,answer_desc,parent_id,status, create_time, update_time)
+        <foreach collection="questionlist" item="item" index="index" separator="union all">
+            SELECT #{item.libraryId},#{item.labelId}, #{item.operator}, #{item.type}, #{item.description},
+            #{item.options},#{item.answer},#{item.answerDesc},#{item.parentId},#{item.status},now(),now() FROM DUAL
+        </foreach>
+    </insert>
+
+    <select id="getAllFromLibrary" resultMap="BaseResultMap">
+		SELECT q.*  FROM questions q  WHERE
+		q.library_id = #{libraryId}
+	</select>
+
+    <update id="removeLabels" parameterType="java.util.List">
+        update questions SET label_id = null WHERE label_id
+        IN
+        <foreach collection="labelIds" index="index" item="item"
+                 separator="," open="(" close=")">
+            #{item,jdbcType=BIGINT}
+        </foreach>
+    </update>
+
+    <select id="getQuestionCountByLabelId" resultMap="BaseResultMap">
+        SELECT COUNT(id)  FROM questions q  WHERE
+        q.label_id = #{labelId} AND q.status = 1
+    </select>
+
+
+</mapper>
+

@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xmlns:aop="http://www.springframework.org/schema/aop"
+	    xmlns:mvc="http://www.springframework.org/schema/mvc"
+	   xmlns:cache="http://www.springframework.org/schema/cache"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context-3.1.xsd
+           http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.1.xsd
+           http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+           http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache.xsd">
+
+	<!--开启自动扫描包-->
+	<context:component-scan base-package="com.enterprise">
+		<!--制定扫包规则，不扫描@Controller注解的JAVA类，其他的还是要扫描  -->
+		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller" />
+	</context:component-scan>
+
+	<!-- 启动注解，注册服务，如验证框架、全局类型转换器-->
+	<mvc:annotation-driven/>
+	<!-- 启用spring @AspectJ支持 启动AOP支持 -->
+	<aop:aspectj-autoproxy />
+
+	<!-- 导入其他模块spring配置文件 -->
+	<import resource="spring-mybatis.xml"/>
+
+	<!-- 启动spring上下文持有者，可在任何地方直接获取spring bean 对象-->
+	<bean class="com.enterprise.base.common.SpringContextHolder" lazy-init="false"/>
+
+	<!--初始化配置文件的路径-->
+	<bean class="com.enterprise.base.config.Configure">
+		<property name="base_path" value="${base_path}"/>
+	</bean>
+
+	<bean id="getCacheAopAspect" class="com.enterprise.aop.GetCacheAOP"/>
+
+	<!--redis-session共享-->
+	<bean id="jedisPoolConfig" class="redis.clients.jedis.JedisPoolConfig">
+		<!-- 最大连接数 -->
+		<property name="maxTotal" value="300"/>
+		<!-- 最大空闲连接数 -->
+		<property name="maxIdle" value="300"/>
+		<!-- 最小空闲连接数 -->
+		<property name="minIdle" value="10"/>
+		<!-- 每次释放连接的最大数目 -->
+		<property name="numTestsPerEvictionRun" value="1024"/>
+		<!-- 释放连接的扫描间隔（毫秒） -->
+		<property name="timeBetweenEvictionRunsMillis" value="30000"/>
+		<!-- 连接最小空闲时间 -->
+		<property name="minEvictableIdleTimeMillis" value="180000"/>
+		<!-- 连接空闲多久后释放, 当空闲时间>该值 且 空闲连接>最大空闲连接数 时直接释放 -->
+		<property name="softMinEvictableIdleTimeMillis" value="10000"/>
+		<!-- 获取连接时的最大等待毫秒数,小于零:阻塞不确定的时间,默认-1 -->
+		<property name="maxWaitMillis" value="1500"/>
+		<!-- 在获取连接的时候检查有效性, 默认false -->
+		<property name="testOnBorrow" value="true"/>
+		<!-- 在空闲时检查有效性, 默认false -->
+		<property name="testWhileIdle" value="true"/>
+		<!-- 连接耗尽时是否阻塞, false报异常,ture阻塞直到超时, 默认true -->
+		<property name="blockWhenExhausted" value="false"/>
+	</bean>
+
+
+	<bean id="readJedisConnectionFactory" class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory" destroy-method="destroy">
+		<property name="poolConfig" ref="jedisPoolConfig"></property>
+		<!--IP地址 -->
+		<property name="hostName" value="r-bp1d85a068fdcc94.redis.rds.aliyuncs.com"></property>
+		<!--端口号  -->
+		<property name="port" value="6379"></property>
+		<!--如果Redis设置有密码  -->
+		<property name="password" value="nx2018!@#" />
+
+		<property name="database" value="1" />
+		<!--客户端超时时间单位是毫秒  -->
+		<property name="timeout" value="10000"></property>
+	</bean>
+
+
+	<!--redis操作模版,使用该对象可以操作redis  -->
+	<bean id="redisTemplate" class="org.springframework.data.redis.core.RedisTemplate" >
+		<property name="connectionFactory" ref="readJedisConnectionFactory" />
+		<!--如果不配置Serializer，那么存储的时候缺省使用String，如果用User类型存储，那么会提示错误User can't cast to String！！ -->
+		<property name="keySerializer" >
+			<bean class="org.springframework.data.redis.serializer.StringRedisSerializer" />
+		</property>
+		<property name="valueSerializer" >
+			<bean class="org.springframework.data.redis.serializer.JdkSerializationRedisSerializer" />
+		</property>
+		<property name="hashKeySerializer">
+			<bean class="org.springframework.data.redis.serializer.StringRedisSerializer"/>
+		</property>
+		<property name="hashValueSerializer">
+			<bean class="org.springframework.data.redis.serializer.JdkSerializationRedisSerializer" />
+		</property>
+
+		<!--开启事务  -->
+		<property name="enableTransactionSupport" value="true"></property>
+	</bean >
+	<!--
+	2,4
+	<bean class="org.springframework.data.redis.serializer.JdkSerializationRedisSerializer" />
+	-->
+	<!--
+　　　　定义缓存管理器redisCacheManager。
+　　　　注意：cache-manager默认值是cacheManager,你的缓存管理器id要是命名是cacheManager，这里可以省略
+    -->
+	<!--1.使用注解驱动-->
+	<cache:annotation-driven cache-manager="redisCacheManager"></cache:annotation-driven>
+
+	<!--2.定义缓存管理器-->
+	<bean id="redisCacheManager" class="org.springframework.data.redis.cache.RedisCacheManager">
+		<!--通过构造方法注入redisTemplate-->
+		<constructor-arg index="0" ref="redisTemplate"></constructor-arg>
+		<!--定义超时时间，单位秒-->
+		<property name="defaultExpiration" value="5000"></property>
+		<!--设置缓存器名称-->
+		<property name="cacheNames">
+			<list>
+				<value>redisCacheManager</value>
+			</list>
+		</property>
+	</bean>
+
+</beans>

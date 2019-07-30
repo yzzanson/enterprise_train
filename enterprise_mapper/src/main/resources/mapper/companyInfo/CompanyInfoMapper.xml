@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.enterprise.mapper.companyInfo.CompanyInfoMapper">
+    <resultMap id="BaseResultMap" type="com.enterprise.base.entity.CompanyInfoEntity">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="send_oa" jdbcType="INTEGER" property="sendOa"/>
+        <result column="agent_status" jdbcType="INTEGER" property="agentStatus"/>
+        <result column="status" jdbcType="INTEGER" property="status"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+        <result column="stop_time" jdbcType="TIMESTAMP" property="stopTime"/>
+        <result column="delete_time" jdbcType="TIMESTAMP" property="deleteTime"/>
+        <result column="refresh_time" jdbcType="TIMESTAMP" property="refreshTime"/>
+    </resultMap>
+
+    <sql id="baseColumnList">
+		id,name,send_oa,agent_status,status,create_time,update_time,stop_time,delete_time,refresh_time
+	</sql>
+
+    <insert id="createCompanyInfo" parameterType="com.enterprise.base.entity.CompanyInfoEntity" useGeneratedKeys="true"
+            keyProperty="id">
+		INSERT INTO company_info(name,send_oa,agent_status,status,create_time,update_time)
+		VALUES (#{name}, #{sendOa}, #{agentStatus}, #{status}, now(), now())
+	</insert>
+
+    <update id="modifyCompanyInfo" parameterType="com.enterprise.base.entity.CompanyInfoEntity">
+        UPDATE company_info
+        <set>
+            <if test="name!=null and name!=''">
+                name = #{name},
+            </if>
+            <if test="sendOa!=null and sendOa!=''">
+                send_oa = #{sendOa},
+            </if>
+            <if test="agentStatus!=null">
+                agent_status = #{agentStatus},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="updateTime != null">
+                update_time = now(),
+            </if>
+            <if test="deleteTime != null">
+                delete_time = now(),
+            </if>
+            <if test="stopTime != null">
+                stop_time = now(),
+            </if>
+            <if test="refreshTime != null">
+                refresh_time = now(),
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <select id="getCompanyNameById" resultType="java.lang.String">
+		SELECT name FROM company_info
+		WHERE id = #{id}
+	</select>
+
+    <select id="getAllCompanys" resultMap="BaseResultMap">
+		SELECT c.id AS id,c.status AS status,c.agent_status AS agentStatus,c.create_time AS createTime,
+		c.name AS name,c.update_time AS updateTime FROM company_info c
+		WHERE status = 1 ORDER BY id desc
+	</select>
+
+    <select id="getCompanysByCondition" parameterType="com.enterprise.base.vo.dto.CompanyReportDTO"
+            resultMap="BaseResultMap">
+        SELECT c.id AS id,c.status AS status,c.agent_status AS agentStatus,c.create_time AS createTime,
+        c.name AS name,c.update_time AS updateTime FROM company_info c,isv_tickets it
+        WHERE c.status = 1 AND c.id = it.company_id
+        <if test="startDate != null">
+            AND <![CDATA[ it.create_time >= #{startDate} ]]>
+        </if>
+        <if test="endDate != null">
+            AND <![CDATA[ it.create_time <= #{endDate} ]]>
+        </if>
+        <if test="search != null and search!=''">
+            AND c.name LIKE CONCAT('%',#{search},'%')
+        </if>
+        <if test="corpId != null">
+            AND it.corp_id = #{corpId}
+        </if>
+        <if test="version != null  and version == '1'.toString() ">
+            AND <![CDATA[  c.id <= 100 ]]>
+        </if>
+        <if test="version != null and version == '2'.toString() and versionList !=null and versionList.size>0">
+            AND it.corp_id IN (SELECT buy_corp_id FROM market_buy WHERE status = 1 AND item_name IN
+            <foreach collection="versionList" item="version" open="(" close=")" separator=",">
+                #{version}
+            </foreach>
+            )
+        </if>
+        <if test="agentStatusList != null and agentStatusList.size>0">
+            AND c.agent_status IN
+            <foreach collection="agentStatusList" item="agentStatus" open="(" close=")" separator=",">
+                #{agentStatus}
+            </foreach>
+        </if>
+        ORDER BY c.id desc
+    </select>
+
+
+    <select id="getCompanysByConditionMultiVersion" parameterType="com.enterprise.base.vo.dto.CompanyReportDTO"
+            resultMap="BaseResultMap">
+        SELECT c.id AS id,c.status AS status,c.agent_status AS agentStatus,c.create_time AS createTime,
+        c.name AS name,c.update_time AS updateTime FROM company_info c,isv_tickets it
+        WHERE c.status = 1 AND c.id = it.company_id
+        <if test="startDate != null">
+            AND <![CDATA[ it.create_time >= #{startDate} ]]>
+        </if>
+        <if test="endDate != null">
+            AND <![CDATA[ it.create_time <= #{endDate} ]]>
+        </if>
+        <if test="search != null and search!=''">
+            AND c.name LIKE CONCAT('%',#{search},'%')
+        </if>
+        <if test="corpId != null">
+            AND it.corp_id = #{corpId}
+        </if>
+        AND <![CDATA[  c.id <= 100 ]]>
+        <if test="agentStatusList != null and agentStatusList.size>0">
+            AND c.agent_status IN
+            <foreach collection="agentStatusList" item="agentStatus" open="(" close=")" separator=",">
+                #{agentStatus}
+            </foreach>
+        </if>
+
+        <if test="versionList != null and versionList.size>0">
+        UNION
+
+        SELECT c.id AS id,c.status AS status,c.agent_status AS agentStatus,c.create_time AS createTime,
+        c.name AS name,c.update_time AS updateTime FROM company_info c,isv_tickets it
+        WHERE c.status = 1 AND c.id = it.company_id
+        <if test="startDate != null">
+            AND <![CDATA[ it.create_time >= #{startDate} ]]>
+        </if>
+        <if test="endDate != null">
+            AND <![CDATA[ it.create_time <= #{endDate} ]]>
+        </if>
+        <if test="search != null and search!=''">
+            AND c.name LIKE CONCAT('%',#{search},'%')
+        </if>
+        <if test="corpId != null">
+            AND it.corp_id = #{corpId}
+        </if>
+        AND it.corp_id IN (SELECT buy_corp_id FROM market_buy WHERE status = 1 AND item_name IN
+        <foreach collection="versionList" item="version" open="(" close=")" separator=",">
+            #{version}
+        </foreach>
+        )
+        </if>
+        <if test="agentStatusList != null and agentStatusList.size>0">
+            AND c.agent_status IN
+            <foreach collection="agentStatusList" item="agentStatus" open="(" close=")" separator=",">
+                #{agentStatus}
+            </foreach>
+        </if>
+    </select>
+
+
+    <select id="getCompanyById" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+		SELECT c.id AS id,c.status AS status,c.agent_status AS agentStatus,c.create_time AS createTime,
+		c.name AS name,c.update_time AS updateTime,c.refresh_time AS refreshTime FROM company_info c
+		WHERE  c.id = #{companyId} LIMIT 0,1
+	</select>
+
+    <select id="getCompanyCountByDate" resultType="java.lang.Integer">
+		SELECT COUNT(id) FROM company_info
+		WHERE  DATE_FORMAT(create_time,'%Y-%m-%d') = #{date} AND status = 1
+	</select>
+
+
+    <select id="getCompanyInfo" resultMap="BaseResultMap">
+        SELECT c.id AS id,c.status AS status,c.agent_status AS agentStatus,c.create_time AS createTime,
+        c.name AS name,c.update_time AS updateTime FROM company_info c
+        WHERE 1=1
+        <if test="name != null">
+            AND c.name LIKE CONCAT('%',#{name},'%')
+        </if>
+        <if test="status != null">
+            AND c.status = #{status}
+        </if>
+        <if test="agentStatus!=null">
+            AND c.agent_status = #{agentStatus}
+        </if>
+        <if test="id!=null">
+            AND c.id = #{id}
+        </if>
+        LIMIT 0,1
+    </select>
+
+    <select id="findCompanyList" resultType="com.enterprise.base.vo.CompanyLibraryVO">
+        SELECT id AS companyId,name AS compName,case agent_status when 0 then '卸载'
+        when 1 then '正常' when 2 then '停用' else '停用' END AS appStatus FROM company_info
+        WHERE 1=1
+        <if test="search != null">
+            AND name LIKE CONCAT('%',#{search},'%')
+        </if>
+    </select>
+
+
+</mapper>

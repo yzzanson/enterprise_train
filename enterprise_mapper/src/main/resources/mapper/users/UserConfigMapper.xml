@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.enterprise.mapper.users.UserConfigMapper">
+    <resultMap id="BaseResultMap" type="com.enterprise.base.entity.UserConfigEntity">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="user_id" jdbcType="INTEGER" property="userId"/>
+        <result column="is_voice" jdbcType="INTEGER" property="isVoice"/>
+        <result column="is_oa" jdbcType="INTEGER" property="isOa"/>
+        <result column="is_only_wrong" jdbcType="INTEGER" property="isOnlyWrong"/>
+    </resultMap>
+
+    <sql id="baseColumnList">
+		id,user_id,is_voice,is_oa,is_only_wrong
+	</sql>
+
+    <insert id="createUserConfig" parameterType="com.enterprise.base.entity.UserConfigEntity" useGeneratedKeys="true"
+            keyProperty="id">
+		INSERT INTO user_config (user_id
+        <if test="isVoice != null">
+            ,is_voice
+        </if>
+        <if test="isOa != null">
+            ,is_oa
+        </if>
+        <if test="isOnlyWrong != null">
+            ,is_only_wrong
+        </if>
+		)
+		VALUES (#{userId}
+        <if test="isVoice != null">
+            ,#{isVoice}
+        </if>
+        <if test="isOa != null">
+            ,#{isOa}
+        </if>
+        <if test="isOnlyWrong != null">
+            ,#{isOnlyWrong}
+        </if>
+        )
+	</insert>
+
+    <update id="updateUserConfig" parameterType="com.enterprise.base.entity.UserConfigEntity">
+        update user_config
+        <set>
+            <if test="isVoice!=null">
+                is_voice = #{isVoice},
+            </if>
+            <if test="isOa != null">
+                is_oa = #{isOa},
+            </if>
+            <if test="isOnlyWrong != null">
+                is_only_wrong = #{isOnlyWrong},
+            </if>
+        </set>
+        WHERE user_id = #{userId}
+    </update>
+
+    <select id="findByUserId" resultMap="BaseResultMap">
+        SELECT  id AS id,user_id AS userId,IFNULL(is_voice,0) AS isVoice,IFNULL(is_oa,0) AS isOa,IFNULL(is_only_wrong,0) AS isOnlyWrong
+         FROM  user_config  WHERE user_id = #{userId}
+    </select>
+
+
+</mapper>

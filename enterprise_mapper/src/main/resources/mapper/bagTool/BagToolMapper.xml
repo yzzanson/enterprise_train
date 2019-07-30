@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.enterprise.mapper.bagTool.BagToolMapper">
+	<resultMap id="BaseResultMap" type="com.enterprise.base.entity.BagToolEntity">
+		<id column="id" jdbcType="INTEGER" property="id" />
+		<result column="tool_name" jdbcType="VARCHAR" property="toolName" />
+		<result column="descript" jdbcType="VARCHAR" property="descript" />
+		<result column="effect" jdbcType="VARCHAR" property="effect" />
+		<result column="relieve" jdbcType="VARCHAR" property="relieve" />
+		<result column="oa_model" jdbcType="VARCHAR" property="oaModel" />
+		<result column="explain_show" jdbcType="VARCHAR" property="explainShow" />
+		<result column="tip" jdbcType="VARCHAR" property="tip" />
+	</resultMap>
+
+	<sql id="baseColumnList" >
+		id,tool_name,descript,effect,relieve,oa_model,explain_show,tip
+	</sql>
+
+	<select id="getById" resultType="com.enterprise.base.vo.bagtool.BagToolVO">
+		SELECT id AS id,tool_name AS toolName,descript AS descript,explain_show AS exlpainShow,tip AS tip FROM bag_tool WHERE id = #{id}
+	</select>
+
+	<select id="getAllTools" resultType="com.enterprise.base.vo.bagtool.BagToolVO">
+		SELECT id AS id,tool_name AS toolName,descript AS descript,relieve AS relieve,tip AS tip FROM bag_tool WHERE status = 1 ORDER BY id ASC
+	</select>
+
+	<select id="getOaModelById" resultType="java.lang.String">
+		SELECT oa_model FROM bag_tool WHERE id = #{id}
+	</select>
+
+
+</mapper>

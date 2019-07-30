@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.enterprise.mapper.users.UserMapper">
+    <resultMap id="BaseResultMap" type="com.enterprise.base.entity.UserEntity">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="ding_id" jdbcType="VARCHAR" property="dingId"/>
+        <result column="union_id" jdbcType="VARCHAR" property="unionId"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="avatar" jdbcType="VARCHAR" property="avatar"/>
+        <result column="source" jdbcType="INTEGER" property="source"/>
+        <result column="status" jdbcType="INTEGER" property="status"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+    </resultMap>
+
+    <sql id="baseColumnList">
+		id,ding_id,union_id,name,avatar,source,status,create_time,update_time
+	</sql>
+
+    <insert id="createOrUpdateUser" parameterType="com.enterprise.base.entity.UserEntity" useGeneratedKeys="true"
+            keyProperty="id">
+		INSERT INTO user (ding_id,union_id,name, avatar,source, status, create_time, update_time)
+		VALUES (#{dingId},#{unionId},#{name}, #{avatar},#{source},#{status},now(),now())
+	</insert>
+
+    <update id="updateUser" parameterType="com.enterprise.base.entity.UserEntity">
+        update user
+        <set>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="avatar != null and avatar != ''">
+                avatar = #{avatar},
+            </if>
+            <if test="updateTime != null">
+                update_time = now(),
+            </if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+
+    <select id="getUserById" resultMap="BaseResultMap">
+		SELECT * FROM user WHERE id = #{id} LIMIT 0,1
+	</select>
+
+
+    <select id="getUserIdByName" resultType="java.lang.Integer">
+		SELECT id FROM user WHERE name = #{name}
+	</select>
+
+    <select id="findUser" resultMap="BaseResultMap">
+        SELECT * FROM user WHERE 1=1
+        <if test="name != null and name != ''">
+            AND name = #{name}
+        </if>
+        <if test="status != null and status != ''">
+            AND status = #{status}
+        </if>
+
+    </select>
+
+    <select id="getUserEntity" parameterType="com.enterprise.base.entity.UserEntity" resultMap="BaseResultMap">
+        SELECT id,ding_id,union_id,name,avatar,status,create_time,update_time
+        FROM user
+        <where>
+            <if test="id != null">
+                id = #{id}
+            </if>
+            <if test="dingId != null">
+                and ding_id = #{dingId}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+        </where>
+    </select>
+
+    <select id="getNameById" resultType="java.lang.String">
+		SELECT name FROM user WHERE id = #{id}
+	</select>
+
+    <select id="getUserCountByDate" resultType="java.lang.Integer">
+		SELECT COUNT(id) FROM user WHERE status = 1
+		AND DATE_FORMAT(create_time,'%Y-%m-%d') = #{date}
+	</select>
+
+    <select id="getUserByDingId" resultMap="BaseResultMap">
+		SELECT * FROM user WHERE ding_id = #{dingId} LIMIT 0,1
+	</select>
+
+    <select id="getUserByUnionId" resultMap="BaseResultMap">
+		SELECT * FROM user WHERE union_id = #{unionId} LIMIT 0,1
+	</select>
+
+    <select id="callInitUserDataFunction" parameterType="java.lang.Integer" statementType="CALLABLE">
+        {#{result,mode=OUT,jdbcType=INTEGER} = call init_user_data(#{userId,mode=IN,jdbcType=INTEGER})}
+    </select>
+
+</mapper>

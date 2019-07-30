@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.enterprise.mapper.questions.QuestionLabelMapper">
+	<resultMap id="BaseResultMap" type="com.enterprise.base.entity.QuestionLabelEntity">
+		<id column="id" jdbcType="INTEGER" property="id" />
+		<result column="company_id" jdbcType="INTEGER" property="companyId" />
+		<result column="library_id" jdbcType="INTEGER" property="libraryId" />
+		<result column="user_id" jdbcType="INTEGER" property="userId" />
+		<result column="label_name" jdbcType="VARCHAR" property="labelName" />
+		<result column="status" jdbcType="INTEGER" property="status" />
+		<result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+		<result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+	</resultMap>
+
+	<sql id="baseColumnList" >
+		id,company_id,library_id,user_id,label_name,status,create_time,update_time
+	</sql>
+
+
+	<insert id="createQuestionLabel" parameterType="com.enterprise.base.entity.QuestionLabelEntity"
+			useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO question_label (company_id,library_id,user_id,label_name,status,create_time,update_time)
+		VALUES (#{companyId},#{libraryId},#{userId}, #{labelName},#{status},#{createTime},#{updateTime})
+		ON DUPLICATE KEY UPDATE user_id = #{userId}, status = #{status},update_time = now()
+	</insert>
+
+
+	<update id="updateQuestionLabel">
+		UPDATE question_label
+		<set>
+			<if test="companyId != null">
+				company_id = #{companyId},
+			</if>
+			<if test="labelName != null and labelName != ''">
+				label_name = #{labelName},
+			</if>
+			<if test="status != null and status != ''">
+				status = #{status},
+			</if>
+		</set>
+		where id = #{id}
+	</update>
+
+
+	<select id="getQuestionLabelById" resultMap="BaseResultMap">
+		SELECT id,company_id,library_id,user_id,label_name,status,create_time,update_time FROM question_label WHERE
+		id = #{id}
+	</select>
+
+	<select id="getQuestionLabelsByLibrary" resultMap="BaseResultMap">
+		SELECT id,company_id,library_id,user_id,label_name,status,create_time,update_time FROM question_label WHERE
+		<![CDATA[ status <> 0 ]]> AND library_id = #{libraryId}
+		<if test="name != null and name != ''">
+			AND label_name like '%${name}%'
+		</if>
+	</select>
+
+	<select id="getQuestionLabelsByLibraryId" resultMap="BaseResultMap">
+		SELECT id,company_id,library_id,user_id,label_name,status,create_time,update_time FROM question_label WHERE
+		<![CDATA[ status <> 0 ]]> AND library_id = #{libraryId}
+	</select>
+
+	<select id="getLabelNameById" resultType="java.lang.String">
+		SELECT label_name FROM question_label where id = #{id}
+	</select>
+
+
+	<update id="batchSafeDelete" parameterType="java.util.List">
+		UPDATE question_label SET status = 0 WHERE id
+		IN
+		<foreach collection="labelIds" index="index" item="item"
+				 separator="," open="(" close=")">
+			#{item,jdbcType=BIGINT}
+		</foreach>
+	</update>
+
+</mapper>

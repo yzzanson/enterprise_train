@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.enterprise.mapper.users.UserXTitleMapper">
+    <resultMap id="BaseResultMap" type="com.enterprise.base.entity.UserXTitleEntity">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="company_id" jdbcType="INTEGER" property="companyId"/>
+        <result column="library_id" jdbcType="INTEGER" property="libraryId"/>
+        <result column="user_id" jdbcType="INTEGER" property="userId"/>
+        <result column="title_id" jdbcType="INTEGER" property="titleId"/>
+        <result column="choose_flag" jdbcType="INTEGER" property="chooseFlag"/>
+        <result column="status" jdbcType="INTEGER" property="status"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+    </resultMap>
+
+    <sql id="baseColumnList">
+		id,company_id,library_id,user_id,title_id,choose_flag,status,create_time,update_time
+	</sql>
+
+    <insert id="createUserXTitle" parameterType="com.enterprise.base.entity.UserXTitleEntity" useGeneratedKeys="true"
+            keyProperty="id">
+		INSERT INTO user_x_title (company_id,library_id,user_id,title_id,choose_flag,status,create_time,update_time)
+		VALUES (#{companyId},#{libraryId},#{userId},#{titleId},#{chooseFlag},#{status},#{createTime},#{updateTime})
+	</insert>
+
+    <update id="updateUserXTitle" parameterType="com.enterprise.base.entity.UserXTitleEntity">
+        update user_x_title
+        <set>
+            <if test="status!=null">
+                status = #{status},
+            </if>
+            <if test="chooseFlag != null">
+                choose_flag = #{chooseFlag},
+            </if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!--用户在该题库是否获取标签-->
+    <select id="findUserXTitleByCompanyAndLibrary" resultType="com.enterprise.base.vo.UserXTitleVO">
+        SELECT id AS id ,IFNULL(choose_flag,0) AS chooseFlag FROM user_x_title WHERE
+        user_id = #{userId} AND company_id = #{companyId} AND library_id =#{libraryId}
+        <if test="status!=null">
+            AND status = #{status}
+        </if>
+        LIMIT 0,1
+    </select>
+
+    <update id="batchDeleteChooseFlag">
+        update user_x_title SET choose_flag = 0
+        WHERE company_id = #{companyId} AND user_id = #{userId}
+    </update>
+
+    <update id="batchUpdate">
+        update user_x_title
+        <trim prefix="set" suffixOverrides=",">
+            <trim prefix="status=case" suffix="end,">
+                <foreach collection="userXTitleList" item="item" index="index">
+                    <if test="item.status!=null">
+                        when id=#{item.id} then #{item.status}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="choose_flag=case" suffix="end,">
+                <foreach collection="userXTitleList" item="item" index="index">
+                    <if test="item.chooseFlag!=null">
+                        when id=#{item.id} then #{item.chooseFlag}
+                    </if>
+                </foreach>
+            </trim>
+        </trim>
+        ,update_time = now()
+        where
+        <foreach collection="userXTitleList" separator="or" item="item" index="index">
+            id=#{item.id}
+        </foreach>
+    </update>
+
+    <select id="findUseWearTitleByCompany" resultType="java.lang.String">
+        SELECT qlt.title
+        FROM user_x_title ut,question_library_title qlt WHERE ut.library_id = qlt.library_id
+        AND ut.choose_flag = 1 AND ut.user_id = #{userId}  AND ut.company_id = #{companyId}
+    </select>
+
+
+    <select id="findUserWearTitleByCompany" resultType="com.enterprise.base.vo.UserXTitleVO">
+        SELECT ut.id AS id,ut.user_id AS userId,qlt.title AS title,ut.choose_flag AS chooseFlag,IFNULL(qlt.type,1) AS type FROM user_x_title ut,questions_library ql,question_library_title qlt WHERE ut.library_id = ql.id
+         AND ut.title_id = qlt.id AND qlt.library_id = ql.id AND ut.choose_flag = 1
+        AND ql.status = 1 AND ut.user_id = #{userId} AND ut.status = 1 AND ut.company_id = #{companyId}
+    </select>
+
+
+    <select id="getAllList" resultType="com.enterprise.base.vo.UserXTitleLibraryVO">
+        SELECT id AS id ,company_id AS companyId,user_id AS userId,library_id AS libraryId FROM user_x_title WHERE 1=1
+        <if test="status!=null">
+            AND status = #{status}
+        </if>
+    </select>
+
+    <select id="findById" resultMap="BaseResultMap">
+        SELECT  * FROM  user_x_title ut WHERE id = #{id}
+    </select>
+
+    <select id="findUserTitleByLibraryId" resultType="java.lang.String">
+        SELECT ql.title FROM  user_x_title ut,question_library_title ql WHERE
+        ut.title_id = ql.id AND ut.status = 1 AND ql.status = 1
+        AND ut.company_id = #{companyId} AND ut.user_id = #{userId}
+        AND ut.library_id = #{libraryId} LIMIT 0,1
+    </select>
+
+
+</mapper>

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.enterprise.mapper.markeyBuy.MarketBuyMapper">
+	<resultMap id="baseResultMap" type="com.enterprise.base.entity.MarketBuyEntity">
+		<id column="id" jdbcType="INTEGER" property="id" />
+		<result column="suite_key" jdbcType="VARCHAR" property="suiteKey" />
+		<result column="buy_corp_id" jdbcType="VARCHAR" property="buyCorpId" />
+		<result column="goods_code" jdbcType="VARCHAR" property="goodsCode" />
+		<result column="item_code" jdbcType="VARCHAR" property="itemCode" />
+		<result column="item_name" jdbcType="VARCHAR" property="itemName" />
+		<result column="sub_quantity" jdbcType="INTEGER" property="subQuantity" />
+		<result column="max_of_people" jdbcType="INTEGER" property="maxOfPeople" />
+		<result column="min_of_people" jdbcType="INTEGER" property="minOfPeople" />
+		<result column="order_id" jdbcType="VARCHAR" property="orderId" />
+		<result column="paid_time" jdbcType="TIMESTAMP" property="paidTime" />
+		<result column="service_stop_time" jdbcType="TIMESTAMP" property="serviceStopTime" />
+		<result column="pay_fee" jdbcType="DECIMAL" property="payFee" />
+		<result column="order_create_source" jdbcType="VARCHAR" property="orderCreateSource" />
+		<result column="nominal_pay_fee" jdbcType="DECIMAL" property="nominalPayFee" />
+		<result column="discountFee" jdbcType="DECIMAL" property="discountFee" />
+		<result column="discount" jdbcType="DECIMAL" property="discount" />
+		<result column="distributor_corp_id" jdbcType="VARCHAR" property="distributorCorpId" />
+		<result column="distributor_corp_name" jdbcType="VARCHAR" property="distributorCorpName" />
+		<result column="status" jdbcType="TINYINT" property="status" />
+		<result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+		<result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+	</resultMap>
+
+	<sql id="baseColumnList" >
+		id,suite_key,buy_corp_id,goods_code,item_code,item_name,sub_quantity,max_of_people,min_of_people,order_id,paid_time,service_stop_time,pay_fee,order_create_source,nominal_pay_fee,discountFee,discount,distributor_corp_id,distributor_corp_name,status,create_time,update_time
+	</sql>
+
+	<select id="isBuy" resultType="java.math.BigDecimal">
+		select sum(pay_fee) from market_buy where buy_corp_id = #{corpId} AND status = 1
+	</select>
+
+
+	<select id="getByCorpId" resultMap="baseResultMap">
+		select * from market_buy where buy_corp_id = #{corpId} AND status = #{status} ORDER BY id DESC
+	</select>
+
+
+	<insert id="createMarketBuy" parameterType="com.enterprise.base.entity.MarketBuyEntity">
+		INSERT INTO market_buy(suite_key,buy_corp_id,goods_code,item_code,item_name,sub_quantity,max_of_people,min_of_people,order_id,paid_time,service_stop_time,pay_fee,order_create_source,nominal_pay_fee,discountFee,discount,distributor_corp_id,distributor_corp_name,status,create_time,update_time)
+		VALUES (#{suiteKey}, #{buyCorpId}, #{goodsCode},#{itemCode}, #{itemName}, #{subQuantity}, #{maxOfPeople}, #{minOfPeople},#{orderId}, #{paidTime},  #{serviceStopTime}, #{payFee}, #{orderCreateSource}, #{nominalPayFee}, #{discountFee}, #{discount}, #{distributorCorpId}, #{distributorCorpName}, #{status},now(),now())
+	</insert>
+
+	<update id="batchUpdate" parameterType="com.enterprise.base.entity.MarketBuyEntity">
+		UPDATE market_buy
+		set  status =
+		<foreach collection="marketBuyList" item="item" index="index" separator=" " open="case ID" close="end">
+			when #{item.id} then #{item.status}
+		</foreach>
+		,update_time = now()
+		where id in
+		<foreach collection="marketBuyList" index="index" item="item"
+				 separator="," open="(" close=")">
+			#{item.id,jdbcType=BIGINT}
+		</foreach>
+	</update>
+
+	<select id="getByCorpIdAndStatus" resultMap="baseResultMap">
+		select * from market_buy where buy_corp_id = #{corpId} AND status = #{status} ORDER BY service_stop_time DESC LIMIT 0,1
+	</select>
+
+	<select id="getMarketVersionList" resultType="java.lang.String">
+		SELECT m.item_name  FROM market_buy m,isv_tickets isv,company_info c where
+		  m.buy_corp_id = isv.corp_id and isv.company_id = c.id group by m.item_name
+	</select>
+
+	<!--<sql id="Base_Column_List" >
+		id,suite_key,buy_corp_id,goods_code,item_code,item_name,sub_quantity,max_of_people,min_of_people,order_id,paid_time,service_stop_time,pay_fee,order_create_source,nominal_pay_fee,discountFee,discount,distributor_corp_id,distributor_corp_name
+	</sql>-->
+
+	<!-- Created by liam on 2018-07-02 10:16:48 -->
+
+</mapper>

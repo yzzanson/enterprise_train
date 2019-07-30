@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.enterprise.mapper.paperBall.PaperBallMapper">
+    <resultMap id="BaseResultMap" type="com.enterprise.base.entity.PaperBallEntity">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="company_id" jdbcType="INTEGER" property="companyId"/>
+        <result column="user_id" jdbcType="INTEGER" property="userId"/>
+        <result column="clean_user_id" jdbcType="INTEGER" property="cleanUserId"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="clean_time" jdbcType="TIMESTAMP" property="cleanTime"/>
+        <result column="elimate_time" jdbcType="TIMESTAMP" property="elimateTime"/>
+        <result column="status" jdbcType="INTEGER" property="status"/>
+    </resultMap>
+
+    <sql id="baseColumnList">
+		id,company_id,user_id,clean_user_id,create_time,clean_time,elimate_time,status
+	</sql>
+
+    <insert id="createPaperBall" parameterType="com.enterprise.base.entity.PaperBallEntity"
+            useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO paper_ball (company_id,user_id,clean_user_id,create_time,clean_time,elimate_time,status)
+		VALUES (#{companyId},#{userId},null,now(),null,null,#{status})
+	</insert>
+
+    <update id="updatePaperBall" parameterType="com.enterprise.base.entity.PaperBallEntity">
+        update paper_ball
+        <set>
+            <if test="cleanUserId >0 ">
+                clean_user_id = #{cleanUserId},
+            </if>
+            <if test="cleanTime != null">
+                clean_time = now(),
+            </if>
+            <if test="elimateTime != null">
+                elimate_time = now(),
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <select id="getExistPaperBallCount" resultType="java.lang.Integer">
+        SELECT COUNT(id) FROM paper_ball
+        WHERE company_id = #{companyId} AND user_id = #{userId}
+        AND status = 1
+    </select>
+
+    <select id="getExpiredPaper" resultMap="BaseResultMap">
+      SELECT * FROM paper_ball WHERE status = 1 AND
+      TIMESTAMPDIFF(HOUR,create_time,now()) >= 72
+    </select>
+
+
+    <update id="batchUpdate">
+        update paper_ball
+        <trim prefix="set" suffixOverrides=",">
+            <trim prefix="status=case" suffix="end,">
+                <foreach collection="paperBallList" item="item" index="index">
+                    <if test="item.status!=null">
+                        when id=#{item.id} then #{item.status}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="elimate_time=case" suffix="end,">
+                <foreach collection="paperBallList" item="item" index="index">
+                    <if test="item.elimateTime!=null">
+                        when id=#{item.id} then now()
+                    </if>
+                </foreach>
+            </trim>
+        </trim>
+        where
+        <foreach collection="paperBallList" separator="or" item="item" index="index">
+            id=#{item.id}
+        </foreach>
+    </update>
+
+    <update id="batchUpdateType">
+        update paper_ball
+        <trim prefix="set" suffixOverrides=",">
+            <trim prefix="ball_type=case" suffix="end,">
+                <foreach collection="paperBallList" item="item" index="index">
+                    <if test="item.status!=null">
+                        when id=#{item.id} then #{item.ballType}
+                    </if>
+                </foreach>
+            </trim>
+        </trim>
+        where
+        <foreach collection="paperBallList" separator="or" item="item" index="index">
+            id=#{item.id}
+        </foreach>
+    </update>
+
+    <select id="getCleanCount" resultType="java.lang.Integer">
+        SELECT COUNT(id) FROM paper_ball WHERE status = 0 AND
+        company_id = #{companyId} AND user_id = #{userId}
+        AND clean_user_id = #{cleanUserId}
+        AND DATE_FORMAT(clean_time,'%Y-%m-%d') = #{dateTime}
+    </select>
+
+
+    <select id="getById" resultMap="BaseResultMap">
+        SELECT * FROM paper_ball WHERE id = #{id}
+    </select>
+
+
+    <select id="getActiveBallList" resultMap="BaseResultMap">
+        SELECT * FROM paper_ball WHERE status = 1 AND
+        company_id = #{companyId} AND user_id = #{userId}
+    </select>
+
+    <select id="getActiveBallListAll" resultMap="BaseResultMap">
+        SELECT * FROM paper_ball WHERE status = 1
+    </select>
+
+    <select id="getExistPaperBallGroup" resultMap="BaseResultMap">
+        SELECT company_id AS companyId,user_id AS userId FROM paper_ball WHERE status = 1 GROUP BY company_id,user_id
+    </select>
+
+    <select id="getUserNotGainPaperBallList" resultType="java.lang.Integer">
+        SELECT 1 FROM paper_ball WHERE NOT EXISTS (SELECT id FROM paper_ball WHERE company_id = #{companyId} AND user_id = #{userId} AND ball_type = 1)
+        UNION
+        SELECT 2 FROM paper_ball WHERE NOT EXISTS (SELECT id FROM paper_ball WHERE company_id = #{companyId} AND user_id = #{userId} AND ball_type = 2)
+        UNION
+        SELECT 3 FROM paper_ball WHERE NOT EXISTS (SELECT id FROM paper_ball WHERE company_id = #{companyId} AND user_id = #{userId} AND ball_type = 3)
+    </select>
+
+
+
+
+
+</mapper>

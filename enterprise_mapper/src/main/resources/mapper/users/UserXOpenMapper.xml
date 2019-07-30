@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.enterprise.mapper.users.UserXOpenMapper">
+    <resultMap id="BaseResultMap" type="com.enterprise.base.entity.UserXOpenEntity">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="user_id" jdbcType="INTEGER" property="userId"/>
+        <result column="company_id" jdbcType="INTEGER" property="companyId"/>
+        <result column="status" jdbcType="INTEGER" property="status"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+    </resultMap>
+
+    <sql id="baseColumnList">
+		id,user_id,company_id,status,create_time,update_time
+	</sql>
+
+    <insert id="createUserXOpen" parameterType="com.enterprise.base.entity.UserXOpenEntity" useGeneratedKeys="true"
+            keyProperty="id">
+		INSERT INTO user_x_open (user_id,company_id,status,create_time,update_time)
+		VALUES (#{userId}, #{companyId},#{status},now(),now())
+	</insert>
+
+    <select id="getCountByCompanyid" resultType="java.lang.Integer">
+        SELECT COUNT(id) FROM user_x_open WHERE 1=1
+        <if test="companyId != null and companyId != ''">
+            AND company_id = #{companyId}
+        </if>
+        <if test="date != null and date != ''">
+            AND DATE_FORMAT(create_time,'%Y-%m-%d') = #{date}
+        </if>
+    </select>
+
+    <select id="getLastOpenTime" resultType="java.util.Date">
+		SELECT create_time FROM user_x_open WHERE company_id = #{companyId}
+		ORDER BY id DESC LIMIT 0,1
+	</select>
+
+    <select id="getCountByCompanyidAndMonth" resultType="java.lang.Integer">
+        SELECT COUNT(id) FROM user_x_open WHERE 1=1
+        <if test="companyId != null and companyId != ''">
+            AND company_id = #{companyId}
+        </if>
+        AND DATE_FORMAT(create_time,'%Y-%m') = #{month}
+    </select>
+
+    <select id="getCountByCompanyidAndTime" resultType="java.lang.Integer">
+		SELECT COUNT(id) FROM user_x_open WHERE 1=1
+        <if test="companyId != null and companyId != ''">
+            AND company_id = #{companyId}
+        </if>
+		  AND create_time BETWEEN #{startTime} AND #{endTime}
+	</select>
+
+    <select id="getLastSeverlOpenRecords" resultType="java.util.Date">
+		SELECT create_time FROM user_x_open WHERE  company_id = #{companyId}
+		  AND user_id = #{userId} ORDER BY create_time LIMIT 0,#{time}
+	</select>
+
+    <!--去除本周回答 宠物等级后的用户-->
+    <select id="getExceludeUserIdList" resultType="java.lang.Integer">
+		SELECT user_id FROM user_x_open WHERE  company_id = #{companyId}
+        <if test="weekUserAnswerList != null and weekUserAnswerList.size>0">
+            AND user_id NOT IN
+            <foreach collection="weekUserAnswerList" item="item" open="(" index="index" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="petUserList != null and petUserList.size>0">
+            AND user_id NOT IN
+            <foreach collection="petUserList" item="item" open="(" index="index" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        GROUP BY user_id
+	</select>
+
+
+
+</mapper>

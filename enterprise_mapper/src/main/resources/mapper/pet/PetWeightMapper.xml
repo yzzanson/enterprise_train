@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.enterprise.mapper.pet.PetWeightMapper">
+    <resultMap id="BaseResultMap" type="com.enterprise.base.entity.PetWeightEntity">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="company_id" jdbcType="INTEGER" property="companyId"/>
+        <result column="user_id" jdbcType="INTEGER" property="userId"/>
+        <result column="weight" jdbcType="INTEGER" property="weight"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+    </resultMap>
+
+    <sql id="baseColumnList">
+		id,company_id,user_id,weight,create_time,update_time
+	</sql>
+
+    <insert id="createPetWeight" parameterType="com.enterprise.base.entity.PetWeightEntity"
+            useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO pet_weight (company_id,user_id,weight,create_time,update_time)
+		VALUES (#{companyId},#{userId}, #{weight},now(),now())
+	</insert>
+
+    <insert id="batchInsert" parameterType="java.util.List">
+        insert into pet_weight (company_id,user_id,weight,create_time,update_time)
+        <foreach collection="petWeightList" item="item" index="index" separator="union all">
+            SELECT #{item.companyId},#{item.userId},#{item.weight},now(),now() FROM DUAL
+        </foreach>
+    </insert>
+
+
+    <update id="updatePetWeight" parameterType="com.enterprise.base.entity.PetWeightEntity">
+        update pet_weight
+        <set>
+            <if test="weight != null">
+                weight = #{weight},
+            </if>
+            <if test="updateTime != null">
+                update_time = now(),
+            </if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+
+    <select id="getPetWeight" resultMap="BaseResultMap">
+		SELECT * FROM pet_weight WHERE company_id = #{companyId} AND user_id = #{userId}
+	</select>
+
+    <!--获取有体重和有宠物的用户-->
+    <select id="getPetWeightUserList" resultType="java.lang.Integer">
+        SELECT ux.user_id FROM user_x_company ux,my_pet mp WHERE ux.user_id = mp.user_id
+        AND ux.status = 1 AND ux.corp_id = #{corpId}
+	</select>
+
+    <select id="getRankWeightList" resultType="com.enterprise.base.vo.rank.UserPetWeightRankVO">
+        SELECT R.* FROM(
+          SELECT A.* FROM(
+            SELECT mp.user_id AS userId,IFNULL(pw.weight,0) AS weight FROM my_pet mp LEFT JOIN pet_weight pw ON
+              mp.user_id = pw.user_id AND pw.company_id = #{companyId}
+              WHERE mp.user_id IN
+              <foreach collection="petWeightUserList" item="item" open="(" index="index" separator="," close=")">
+                #{item}
+              </foreach>
+              ORDER BY pw.weight DESC LIMIT 100000
+          ) A
+         <if test="petRemainUserList!=null and petRemainUserList.size>0">
+          UNION ALL
+          SELECT B.* FROM(
+            SELECT id AS userId,0 AS weight FROM user WHERE status = 1
+            AND id IN
+            <foreach collection="petRemainUserList" item="item" open="(" index="index" separator="," close=")">
+                #{item}
+            </foreach>
+            ORDER BY id
+            DESC LIMIT 100000
+          ) B
+        </if>
+        ) R
+    </select>
+
+    <select id="getRankWeightListFive" resultType="com.enterprise.base.vo.rank.UserPetWeightRankVO">
+        SELECT R.* FROM(
+         SELECT A.* FROM(
+          SELECT mp.user_id AS userId,IFNULL(pw.weight,0) AS weight FROM my_pet mp LEFT JOIN pet_weight pw ON
+            mp.user_id = pw.user_id AND pw.company_id = #{companyId}
+            WHERE mp.user_id IN
+            <foreach collection="petWeightUserList" item="item" open="(" index="index" separator="," close=")">
+              #{item}
+            </foreach>
+             ORDER BY pw.weight DESC LIMIT 100000
+          ) A
+        <if test="petRemainUserList!=null and petRemainUserList.size>0">
+            UNION ALL
+            SELECT B.* FROM(
+            SELECT id AS userId,0 AS weight FROM user WHERE status = 1
+            AND id IN
+            <foreach collection="petRemainUserList" item="item" open="(" index="index" separator="," close=")">
+                #{item}
+            </foreach>
+            ORDER BY id
+            DESC LIMIT 100000
+            ) B
+        </if>
+        ) R LIMIT 0,5
+    </select>
+
+
+    <select id="getRankOtherList" resultType="com.enterprise.base.vo.rank.UserPetWeightRankVO">
+        SELECT A.* FROM(
+          SELECT id AS userId,0 AS weight FROM user WHERE status = 1
+            AND id IN
+           <foreach collection="petRemainUserList" item="item" open="(" index="index" separator="," close=")">
+               #{item}
+           </foreach>
+          ORDER BY id
+           DESC LIMIT 100000
+        ) A
+    </select>
+
+
+    <select id="getRankOtherListFive" resultType="com.enterprise.base.vo.rank.UserPetWeightRankVO">
+        SELECT A.* FROM(
+          SELECT id AS userId,0 AS weight FROM user WHERE status = 1
+            AND id IN
+           <foreach collection="petRemainUserList" item="item" open="(" index="index" separator="," close=")">
+               #{item}
+           </foreach>
+          ORDER BY id
+           DESC LIMIT 100000
+        ) A LIMIT 0,5
+    </select>
+
+
+</mapper>

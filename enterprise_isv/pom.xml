@@ -1,0 +1,51 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>enterprise_train</artifactId>
+        <groupId>com.enterprise</groupId>
+        <version>1.4-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>enterprise_isv</artifactId>
+    <version>${enterprise-train.version}</version>
+    <packaging>jar</packaging>
+
+    <name>enterprise_isv</name>
+    <url>http://maven.apache.org</url>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>com.enterprise</groupId>
+            <artifactId>enterprise_service</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context-support</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.9</version>
+        </dependency>
+
+        <!--<dependency>-->
+            <!--<groupId>com.dingtalk.api</groupId>-->
+            <!--<artifactId>client-sdk.api</artifactId>-->
+            <!--<version>1.0.2</version>-->
+        <!--</dependency>-->
+
+    </dependencies>
+</project>

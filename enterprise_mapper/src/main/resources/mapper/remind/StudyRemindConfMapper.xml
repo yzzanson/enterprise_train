@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.enterprise.mapper.remind.StudyRemindConfMapper">
+    <resultMap id="BaseResultMap" type="com.enterprise.base.entity.StudyRemindConfEntity">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <id column="company_id" jdbcType="INTEGER" property="companyId"/>
+        <id column="content" jdbcType="VARCHAR" property="content"/>
+        <id column="is_open" jdbcType="INTEGER" property="isOpen"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+    </resultMap>
+
+    <sql id="baseColumnList">
+		id,company_id,content,is_open,create_time,update_time
+	</sql>
+    <insert id="createOrUpdateStudyRemind" parameterType="com.enterprise.base.entity.StudyRemindConfEntity"
+            useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO study_remind_conf (company_id,content,is_open,create_time,update_time)
+		VALUES (#{companyId},#{content},#{isOpen},#{createTime},#{updateTime})
+		ON DUPLICATE KEY UPDATE content = #{content},update_time = now()
+	</insert>
+
+    <update id="doUpdate">
+        update study_remind_conf
+        <set>
+            <if test="content != null and content != ''">
+                content = #{content},
+            </if>
+            <if test="isOpen != null">
+                is_open = #{isOpen},
+            </if>
+            <if test="updateTime != null">
+                update_time = now(),
+            </if>
+        </set>
+        WHERE company_id = #{companyId}
+    </update>
+
+    <select id="getByCompanyId" resultType="com.enterprise.base.vo.studyRemind.StudyRemindConfVO">
+        SELECT id AS id,company_id AS companyId,content AS content,is_open AS isOpen FROM study_remind_conf WHERE company_id = #{companyId}
+    </select>
+
+
+</mapper>

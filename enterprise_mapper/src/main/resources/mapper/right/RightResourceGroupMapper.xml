@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.enterprise.mapper.right.RightResourceGroupMapper">
+	<resultMap id="BaseResultMap" type="com.enterprise.base.entity.right.RightResourceGroupEntity">
+		<id column="id" jdbcType="INTEGER" property="id" />
+		<result column="company_id" jdbcType="INTEGER" property="companyId" />
+		<result column="right_group_id" jdbcType="INTEGER" property="rightGroupId" />
+		<result column="right_resource_id" jdbcType="INTEGER" property="rightResourceId" />
+		<result column="status" jdbcType="INTEGER" property="status" />
+		<result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+		<result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+	</resultMap>
+
+	<sql id="baseColumnList" >
+		id,company_id,right_group_id,right_resource_id,status,create_time,update_time
+	</sql>
+
+	<insert id="createRightResourceGroup" parameterType="com.enterprise.base.entity.right.RightResourceGroupEntity" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO right_resource_group (company_id,right_group_id, right_resource_id, status, create_time, update_time)
+		VALUES (#{companyId},#{rightGroupId},#{rightResourceId}, #{status},#{createTime},#{updateTime})
+		ON DUPLICATE KEY UPDATE right_group_id = #{rightGroupId}, right_resource_id=#{rightResourceId},status=#{status},update_time = now()
+	</insert>
+
+	<update id="updateRightResourceGroup" parameterType="com.enterprise.base.entity.right.RightResourceGroupEntity">
+		update right_resource_group
+		<set>
+			<if test="rightGroupId != null">
+				right_group_id = #{rightGroupId},
+			</if>
+			<if test="rightResourceId != null">
+				right_resource_id = #{rightResourceId},
+			</if>
+			<if test="status != null">
+				status = #{status},
+			</if>
+			<if test="updateTime != null">
+				update_time = now(),
+			</if>
+		</set>
+		WHERE id = #{id}
+	</update>
+
+
+	<select id="getResourcesByCompanyAndGroup"  resultMap="BaseResultMap">
+		SELECT * FROM right_resource_group where company_id = #{companyId}
+		AND right_group_id = #{rightGroupId}
+		<if test="status != null">
+			AND status = #{status}
+		</if>
+	</select>
+
+	<select id="getByResourceIdAndCompany"  resultMap="BaseResultMap">
+		SELECT * FROM right_resource_group where company_id = #{companyId}
+		AND right_group_id = #{rightGroupId} AND right_resource_id = #{rightResourceId}
+		<if test="status != null">
+			AND status = #{status}
+		</if>
+	</select>
+
+
+	<insert id="batchInsert" parameterType="java.util.List" >
+		insert into right_resource_group (company_id,right_group_id, right_resource_id, status, create_time, update_time)
+		<foreach collection="insertList" item="item" index="index" separator="union all">
+			SELECT #{item.companyId},#{item.rightGroupId},#{item.rightResourceId}, #{item.status},#{item.createTime},#{item.updateTime} FROM DUAL
+		</foreach>
+	</insert>
+
+	<update id="batchUpdate" parameterType="java.util.List">
+		update right_resource_group
+		set  status=
+		<foreach collection="updateList" item="item" index="index" separator=" " open="case ID" close="end">
+			when #{item.id} then #{item.status}
+		</foreach>
+		,update_time = now()
+		where id in
+		<foreach collection="updateList" index="index" item="item"
+				 separator="," open="(" close=")">
+			#{item.id,jdbcType=BIGINT}
+		</foreach>
+	</update>
+
+
+	<update id="batchUpdateStatus">
+		UPDATE right_resource_group
+		SET  status = #{status}
+		WHERE company_id = #{companyId} AND right_group_id = #{rightGroupId}
+	</update>
+
+
+	<select id="getResourcesByCompanyAndGroups"  resultType="java.lang.Integer">
+		SELECT right_resource_id FROM right_resource_group where company_id = #{companyId}
+		AND right_group_id in
+		<foreach collection="rightGrouList" index="index" item="item"
+				 separator="," open="(" close=")">
+			#{item.rightGroupId,jdbcType=BIGINT}
+		</foreach>
+		AND status = 1
+	</select>
+
+
+
+</mapper>

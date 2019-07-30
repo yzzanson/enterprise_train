@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.enterprise.mapper.bagTool.BagToolDescMapper">
+	<resultMap id="BaseResultMap" type="com.enterprise.base.entity.BagToolDescEntity">
+		<id column="id" jdbcType="INTEGER" property="id" />
+		<result column="play_desc" jdbcType="VARCHAR" property="playDesc" />
+		<result column="gain_tool" jdbcType="VARCHAR" property="gainTool" />
+	</resultMap>
+
+	<sql id="baseColumnList" >
+		id,play_desc,gain_tool
+	</sql>
+
+	<select id="getOne" resultType="com.enterprise.base.vo.bagtool.BagToolDescVO">
+		SELECT play_desc AS playDesc,gain_tool AS gainTool  FROM bag_tool_desc LIMIT 0,1
+	</select>
+
+</mapper>

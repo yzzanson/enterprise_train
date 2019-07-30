@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.enterprise.mapper.right.UserRightGroupMapper">
+    <resultMap id="BaseResultMap" type="com.enterprise.base.entity.right.UserRightGroupEntity">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <id column="company_id" jdbcType="INTEGER" property="companyId"/>
+        <id column="user_id" jdbcType="INTEGER" property="userId"/>
+        <result column="right_group_id" jdbcType="INTEGER" property="rightGroupId"/>
+        <result column="status" jdbcType="INTEGER" property="status"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+    </resultMap>
+
+    <sql id="baseColumnList">
+		id,company_id,user_id,right_group_id,status,create_time,update_time
+	</sql>
+
+    <insert id="createOrUpdateUserRightGroup" parameterType="com.enterprise.base.entity.right.UserRightGroupEntity"
+            useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO user_right_group (company_id,user_id,right_group_id,status,create_time, update_time)
+		VALUES (#{companyId},#{userId},#{rightGroupId}, #{status},#{createTime},#{updateTime})
+		ON DUPLICATE KEY UPDATE right_group_id = #{rightGroupId}, status=#{status},update_time = now()
+	</insert>
+
+
+    <insert id="batchInsert" parameterType="java.util.List">
+        insert into user_right_group (company_id,user_id,right_group_id,status,create_time, update_time)
+        <foreach collection="insertList" item="item" index="index" separator="union all">
+            SELECT #{item.companyId}, #{item.userId}, #{item.rightGroupId},
+            #{item.status},now(),now() FROM DUAL
+        </foreach>
+    </insert>
+
+    <update id="batchUpdate" parameterType="java.util.List">
+        update user_right_group
+        set status =
+        <foreach collection="updateList" item="item" index="index" separator=" " open="case ID" close="end">
+            when #{item.id} then #{item.status}
+        </foreach>
+        where id in
+        <foreach collection="updateList" index="index" item="item"
+                 separator="," open="(" close=")">
+            #{item.id,jdbcType=BIGINT}
+        </foreach>
+    </update>
+
+    <select id="findUserRightGroups" resultMap="BaseResultMap">
+        SELECT
+        id, company_id,user_id, right_group_id, status, create_time, update_time
+        FROM user_right_group
+        <where>
+            user_id = #{userId}
+            <if test="rightGroupId != null and rightGroupId != ''">
+                and right_group_id = #{rightGroupId}
+            </if>
+            <if test="status != null and status != ''">
+                and status = #{status}
+            </if>
+            <if test="companyId != null and companyId != ''">
+                and company_id = #{companyId}
+            </if>
+        </where>
+    </select>
+
+    <select id="findUserRightGroups2" resultMap="BaseResultMap">
+        SELECT
+        id, company_id,user_id, right_group_id, status, create_time, update_time
+        FROM user_right_group WHERE 1=1
+        <if test="rightGroupId != null and rightGroupId != ''">
+            and right_group_id = #{rightGroupId}
+        </if>
+        <if test="status != null and status != ''">
+            and status = #{status}
+        </if>
+        <if test="companyId != null and companyId != ''">
+            and company_id = #{companyId}
+        </if>
+    </select>
+
+
+    <select id="getUserRightGroupCount" resultType="java.lang.Integer">
+        SELECT COUNT(s.id) FROM (
+        SELECT
+        id, user_id, right_group_id, status, create_time, update_time
+        FROM user_right_group
+        <where>
+            user_id = #{userId}
+            <if test="rightGroupId != null and rightGroupId != ''">
+                and right_group_id = #{rightGroupId}
+            </if>
+            <if test="status != null and status != ''">
+                and status = #{status}
+            </if>
+            <if test="companyId != null and companyId != ''">
+                and company_id = #{companyId}
+            </if>
+        </where>
+        ) s
+    </select>
+
+
+    <update id="updateUserRightGroup" parameterType="com.enterprise.base.entity.right.UserRightGroupEntity">
+        update user_right_group
+        <set>
+            <if test="rightGroupId != null and rightGroupId != ''">
+                right_group_id = #{rightGroupId},
+            </if>
+            <if test="status != null and status != ''">
+                status = #{status},
+            </if>
+            <if test="updateTime != null">
+                update_time = now(),
+            </if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <select id="getUserGroupByCompanyIdAndUserId" resultType="java.lang.Integer">
+	  SELECT right_group_id FROM user_right_group where company_id = #{companyId} AND user_id = #{userId} ORDER BY id ASC LIMIT 0,1
+	</select>
+
+
+    <select id="findUserRightGroupByGroupId" resultMap="BaseResultMap">
+        SELECT *
+        FROM user_right_group
+        <where>
+            user_id = #{userId}
+            <if test="rightGroupId != null and rightGroupId != ''">
+                and right_group_id = #{rightGroupId}
+            </if>
+            <if test="status != null and status != ''">
+                and status = #{status}
+            </if>
+            <if test="companyId != null and companyId != ''">
+                and company_id = #{companyId}
+            </if>
+        </where>
+    </select>
+
+    <!--删除权限组下的酥油用户-->
+    <update id="batchDeleteByGroupId" parameterType="java.lang.Integer">
+		UPDATE user_right_group SET status = 0,
+				update_time = now()
+		WHERE right_group_id = #{groupId}
+	</update>
+
+    <select id="getUserRightGroupByGroupId" resultType="java.lang.Integer">
+        SELECT user_id
+        FROM user_right_group
+        WHERE  right_group_id = #{groupId}
+        AND status = 1 AND company_id = #{companyId}
+    </select>
+
+
+
+</mapper>

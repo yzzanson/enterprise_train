@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.enterprise.mapper.bagTool.BagToolEffectQuestionsMapper">
+	<resultMap id="BaseResultMap" type="com.enterprise.base.entity.BagToolEffectQuestionEntity">
+		<id column="id" jdbcType="INTEGER" property="id" />
+		<result column="company_id" jdbcType="INTEGER" property="companyId" />
+		<result column="tool_id" jdbcType="INTEGER" property="toolId" />
+		<result column="user_id" jdbcType="INTEGER" property="userId" />
+		<result column="user_x_question_id" jdbcType="INTEGER" property="userXQuestionId" />
+		<result column="bag_tool_effect_id" jdbcType="INTEGER" property="bagToolEffectId" />
+		<result column="add_exp" jdbcType="INTEGER" property="addExp" />
+		<result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+	</resultMap>
+
+	<sql id="baseColumnList" >
+		id,company_id,tool_id,user_id,user_x_question_id,bag_tool_effect_id,add_exp,create_time
+	</sql>
+
+	<insert id="createOne" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO bag_tool_effect_question (company_id,tool_id,user_id,user_x_question_id,bag_tool_effect_id,create_time)
+		VALUES (#{companyId},#{toolId},#{userId},#{userXQuestionId},#{bagToolEffectId},#{createTime})
+	</insert>
+
+
+	<!--查看当前道具作用的次数-->
+	<select id="getToolEffectCount" resultType="java.lang.Integer">
+		SELECT COUNT(id) FROM bag_tool_effect_question WHERE company_id = #{companyId}
+		AND user_id = #{userId} AND bag_tool_effect_id = #{effectId}
+	</select>
+
+
+	<update id="updateOne">
+		update bag_tool_effect_question
+		<set>
+			<if test="addExp != null">
+				add_exp = #{addExp},
+			</if>
+		</set>
+		WHERE id = #{id}
+	</update>
+
+
+	<!--查看当前道具作用的次数-->
+	<select id="getToolEffectCount2" resultType="java.lang.Integer">
+		SELECT COUNT(id) FROM bag_tool_effect_question WHERE company_id = #{companyId}
+		AND user_id = #{userId} AND bag_tool_effect_id = #{effectId} AND add_exp  = 1
+	</select>
+
+
+
+	<!--获取使用道具人姓名
+	<select id="geToolUsers" resultType="java.lang.String">
+		SELECT GROUP_CONCAT(s.name SEPARATOR ',') AS username FROM (
+			SELECT user_id,u.name FROM bag_tool_effect bt,user u WHERE
+			bt.user_id = u.id AND bt.company_id = #{companyId} AND  bt.status = 1 AND  bt.effect_user_id =  #{userId} AND  bt.tool_id = #{toolId}
+ 			GROUP BY  bt.company_id, bt.effect_user_id, bt.user_id) s
+	</select>
+	-->
+
+
+</mapper>

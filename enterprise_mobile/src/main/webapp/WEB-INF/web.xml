@@ -1,0 +1,114 @@
+<!DOCTYPE web-app PUBLIC
+        "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
+        "http://java.sun.com/dtd/web-app_2_3.dtd" >
+<web-app
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://java.sun.com/xml/ns/javaee"
+        xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd" version="3.0">
+
+    <display-name>Archetype Created Web Application</display-name>
+
+
+    <!-- 告知javaEE容器，有哪些内容需要添加到上下文中去 -->
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value> classpath:applicationContext.xml </param-value>
+    </context-param>
+
+    <!-- spring框架提供的字符集过滤器 -->
+    <!-- spring Web MVC框架提供了org.springframework.web.filter.CharacterEncodingFilter用于解决POST方式造成的中文乱码问题  -->
+    <filter>
+        <filter-name>encodingFilter</filter-name>
+        <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+        <init-param>
+            <param-name>encoding</param-name>
+            <param-value>UTF-8</param-value>
+        </init-param>
+        <!-- force强制，促使 -->
+        <init-param>
+            <param-name>forceEncoding</param-name>
+            <param-value>true</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>encodingFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <!--
+    <filter>
+        <filter-name>sessionFilter</filter-name>
+        <filter-class>com.enterprise.mobile.web.session.SessionFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>sessionFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+
+    <filter>
+        <filter-name>XssEscape</filter-name>
+        <filter-class>com.enterprise.mobile.web.filter.XssFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>XssEscape</filter-name>
+        <url-pattern>/*</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
+    </filter-mapping>
+    -->
+
+    <!--CORS配置线上要加-->
+    <filter>
+        <filter-name>cors</filter-name>
+        <filter-class>com.enterprise.mobile.web.filter.SimpleCORSFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>cors</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+    <!---->
+
+    <!-- listener -->
+    <!-- 使用ContextLoaderListener初始化Spring容器 -->
+    <!--若没有指定其他参数，默认查找的配置文件位置是：/WEB-INF/applicationContext.xml  -->
+    <listener>
+        <description>Spring容器加载监听器</description>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+    </listener>
+
+    <!-- servlet -->
+    <!--Isv接入-->
+    <servlet>
+        <display-name>IsvReceiveServlet</display-name>
+        <servlet-name>IsvReceiveServlet</servlet-name>
+        <servlet-class>com.enterprise.isv.servlets.IsvReceiveServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>IsvReceiveServlet</servlet-name>
+        <url-pattern>/isvreceive</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>dispatcherServlet</servlet-name>
+        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+        <init-param>
+            <param-name>contextConfigLocation</param-name>
+            <param-value>classpath*:spring-mvc.xml</param-value>
+        </init-param>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>dispatcherServlet</servlet-name>
+        <url-pattern>/</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>DruidStatView</servlet-name>
+        <servlet-class>com.alibaba.druid.support.http.StatViewServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>DruidStatView</servlet-name>
+        <url-pattern>/druid/*</url-pattern>
+    </servlet-mapping>
+
+</web-app>

@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.enterprise.mapper.remind.StudyRemindMapper">
+    <resultMap id="BaseResultMap" type="com.enterprise.base.entity.StudyRemindEntity">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <id column="company_id" jdbcType="INTEGER" property="companyId"/>
+        <id column="library_id" jdbcType="INTEGER" property="libraryId"/>
+        <id column="department_id" jdbcType="INTEGER" property="deptId"/>
+        <id column="user_id" jdbcType="INTEGER" property="userId"/>
+        <result column="status" jdbcType="VARCHAR" property="status"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+    </resultMap>
+
+    <sql id="baseColumnList">
+		id,company_id,library_id,department_id,user_id,status,create_time,update_time
+	</sql>
+    <insert id="createOrUpdateStudyRemind" parameterType="com.enterprise.base.entity.StudyRemindEntity"
+            useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO study_remind (company_id,library_id,department_id,user_id,status,create_time,update_time)
+		VALUES (#{companyId},#{libraryId},#{deptId},#{userId},#{status},#{createTime},#{updateTime})
+		ON DUPLICATE KEY UPDATE department_id = #{deptId}, user_id = #{userId},update_time = now()
+	</insert>
+
+    <insert id="batchInsertStudyRemind" parameterType="java.util.List">
+        insert into study_remind (company_id,library_id,department_id,user_id,status,create_time,update_time)
+        <foreach collection="studyRemindList" item="item" index="index" separator="union all">
+            SELECT #{item.companyId}, #{item.libraryId}, #{item.deptId}, #{item.userId},
+            #{item.status},now(),now() FROM DUAL
+        </foreach>
+    </insert>
+
+    <insert id="batchInsertStudyRemindDept" parameterType="java.util.List">
+        insert into study_remind (company_id,library_id,department_id,user_id,status,create_time,update_time)
+        <foreach collection="studyRemindList" item="item" index="index" separator="union all">
+            SELECT #{item.companyId}, #{item.libraryId}, #{item.deptId},null ,
+            #{item.status},now(),now() FROM DUAL
+        </foreach>
+    </insert>
+
+
+    <select id="getRemindUserIdList" parameterType="com.enterprise.base.entity.StudyRemindEntity"
+            resultMap="BaseResultMap">
+        SELECT * FROM study_remind
+        WHERE 1=1
+        <if test="companyId != null">
+            AND company_id = #{companyId}
+        </if>
+        <if test="type != null and type ==0">
+            AND (department_id ='' or department_id is null)
+        </if>
+
+        <if test="type != null and type ==1">
+            AND department_id is not null
+        </if>
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+        AND library_id = #{libraryId}
+    </select>
+
+    <update id="batchSafeDelete">
+        update study_remind
+        <set>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="updateTime != null">
+                update_time = now(),
+            </if>
+        </set>
+        WHERE library_id = #{libraryId} AND company_id= #{companyId}
+    </update>
+
+    <update id="updateStudyRemind">
+        update study_remind
+        <set>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="updateTime != null">
+                update_time = now(),
+            </if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <select id="getByCondition" parameterType="com.enterprise.base.entity.StudyRemindEntity" resultMap="BaseResultMap">
+        SELECT * FROM study_remind
+        WHERE 1=1
+        <if test="companyId != null and companyId != ''">
+            AND company_id = #{companyId}
+        </if>
+        <if test="libraryId != null and libraryId != ''">
+            AND library_id = #{libraryId}
+        </if>
+        <if test="departmentId != null and departmentId != ''">
+            AND department_id = #{departmentId}
+        </if>
+        <if test="userId != null and userId != ''">
+            AND user_id = #{userId}
+        </if>
+    </select>
+
+    <select id="getListByCompanyIdAndLibraryIdAndType" resultType="com.enterprise.base.vo.studyRemind.StudyRemindVO">
+        SELECT id AS id,department_id AS deptid,user_id AS userid,library_id AS libraryId
+        FROM study_remind WHERE 1=1
+        <if test="companyId != null and companyId != ''">
+            AND company_id = #{companyId}
+        </if>
+        <if test="libraryId != null and libraryId != ''">
+            AND library_id = #{libraryId}
+        </if>
+        <if test="type != null and type == 0">
+            AND department_id IS NOT NULL
+        </if>
+        <if test="type != null and type == 1">
+            AND user_id IS NOT NULL
+        </if>
+        AND status = 1 ORDER BY id DESC
+    </select>
+
+    <select id="getSendedIds" resultType="java.lang.String">
+        <if test="type != null and type == 0">
+            SELECT group_concat(department_id) FROM study_remind
+        </if>
+        <if test="type != null and type == 1">
+            SELECT group_concat(user_id) FROM study_remind
+        </if>
+        WHERE library_id = #{libraryId}
+        <if test="type != null and type == 0">
+            AND department_id IS NOT NULL
+        </if>
+
+        <if test="type != null and type == 1">
+            AND user_id IS NOT NULL
+        </if>
+    </select>
+
+    <select id="getRemindUserIds" resultType="java.lang.Integer">
+        SELECT user_id AS userid FROM study_remind
+        WHERE 1=1
+        <if test="companyId != null and companyId != ''">
+            AND company_id = #{companyId}
+        </if>
+        <if test="libraryId != null and libraryId != ''">
+            AND library_id = #{libraryId}
+        </if>
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+       ORDER BY id DESC
+    </select>
+
+
+    <update id="batchUpdateStudyRemind">
+        update study_remind
+        <trim prefix="set" suffixOverrides=",">
+            <trim prefix="status=case" suffix="end,">
+                <foreach collection="studyRemindList" item="item" index="index">
+                    <if test="item.status!=null">
+                        when id=#{item.id} then #{item.status}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="update_time=case" suffix="end,">
+                <foreach collection="studyRemindList" item="item" index="index">
+                    <if test="item.updateTime!=null">
+                        when id=#{item.id} then now()
+                    </if>
+                </foreach>
+            </trim>
+        </trim>
+        where
+        <foreach collection="studyRemindList" separator="or" item="item" index="index">
+            id=#{item.id}
+        </foreach>
+
+    </update>
+
+</mapper>

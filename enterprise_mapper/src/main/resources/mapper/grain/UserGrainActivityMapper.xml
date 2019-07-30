@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.enterprise.mapper.grain.UserGrainActivityMapper">
+    <resultMap id="BaseResultMap" type="com.enterprise.base.entity.UserGrainActivityEntity">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="company_id" jdbcType="INTEGER" property="companyId"/>
+        <result column="activity_id" jdbcType="VARCHAR" property="activityId"/>
+        <result column="user_id" jdbcType="VARCHAR" property="userId"/>
+        <result column="grain_cost" jdbcType="VARCHAR" property="grainCost"/>
+        <result column="certificate_no" jdbcType="VARCHAR" property="certificateNo"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+    </resultMap>
+
+    <sql id="baseColumnList">
+		id,company_id,activity_id,user_id,grain_cost,certificate_no,create_time
+	</sql>
+
+    <insert id="createUserGrainActivity" parameterType="com.enterprise.base.entity.UserGrainActivityEntity" useGeneratedKeys="true"
+            keyProperty="id">
+        INSERT INTO user_grain_activity (company_id,activity_id,user_id,grain_cost,certificate_no,create_time)
+        VALUES (#{companyId},#{activityId},#{userId},#{grainCost},#{certificateNo},#{createTime})
+    </insert>
+
+    <select id="getByCompanyAndUser" resultMap="BaseResultMap">
+        SELECT * FROM user_grain_activity WHERE company_id = #{companyId} AND activity_id = #{activityId} AND user_id = #{userId}
+    </select>
+
+    <select id="getById" resultMap="BaseResultMap">
+        SELECT * FROM user_grain_activity WHERE id = #{id}
+    </select>
+
+    <select id="getSponsorCountByActivityId" resultType="java.lang.Integer">
+        SELECT IFNULL(COUNT(id),0) FROM user_grain_activity WHERE activity_id = #{activityId}
+    </select>
+
+    <select id="getListByUser" resultMap="BaseResultMap">
+        SELECT * FROM user_grain_activity ug,grain_activity g WHERE ug.company_id = #{companyId}  AND ug.user_id = #{userId}
+        AND ug.activity_id = g.id AND g.status = 1
+    </select>
+
+
+</mapper>

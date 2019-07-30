@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.enterprise.mapper.suites.SuitesMapper">
+	<resultMap id="BaseResultMap" type="com.enterprise.base.entity.SuitesEntity">
+		<id column="id" jdbcType="INTEGER" property="id" />
+		<result column="suite_key" jdbcType="VARCHAR" property="suiteKey" />
+		<result column="suite_secret" jdbcType="VARCHAR" property="suiteSecret" />
+		<result column="token" jdbcType="VARCHAR" property="token" />
+		<result column="encoding_aes_key" jdbcType="VARCHAR" property="encodingAesKey" />
+		<result column="suite_access_token" jdbcType="VARCHAR" property="suiteAccessToken" />
+		<result column="suite_access_token_expire_time" jdbcType="TIMESTAMP" property="suiteAccessTokenExpireTime" />
+		<result column="description" jdbcType="VARCHAR" property="description" />
+		<result column="suite_ticket" jdbcType="VARCHAR" property="suiteTicket" />
+		<result column="corp_appid" jdbcType="VARCHAR" property="corpAppid" />
+		<result column="status" jdbcType="INTEGER" property="status" />
+		<result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+		<result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+	</resultMap>
+
+	<sql id="baseColumnList" >
+		id,suite_key,suite_secret,token,encoding_aes_key,suite_access_token,suite_access_token_expire_time,description,suite_ticket,corp_appid,status,create_time,update_time
+	</sql>
+
+	<select id="getSuiteByKey" parameterType="com.enterprise.base.entity.SuitesEntity" resultMap="BaseResultMap">
+		SELECT
+		id, suite_key, suite_secret, token, encoding_aes_key, suite_access_token, suite_access_token_expire_time, description, suite_ticket, corp_appid, status, create_time, update_time
+		FROM suites
+		WHERE suite_key = #{suiteKey} limit 0,1
+	</select>
+
+	<select id="getSuitesentity" parameterType="com.enterprise.base.entity.SuitesEntity" resultMap="BaseResultMap">
+		SELECT
+		id, suite_key, suite_secret, token, encoding_aes_key, suite_access_token, suite_access_token_expire_time, description, suite_ticket, corp_appid, status, create_time, update_time
+		FROM suites
+		WHERE id = #{id} and status = #{status}
+	</select>
+
+	<update id="modifySuites" parameterType="com.enterprise.base.entity.SuitesEntity">
+		UPDATE suites
+		<set>
+			<if test="suiteSecret != null">
+				suite_secret = #{suiteSecret},
+			</if>
+			<if test="token != null">
+				token = #{token},
+			</if>
+			<if test="encodingAesKey != null">
+				encoding_aes_key = #{encodingAesKey},
+			</if>
+			<if test="suiteAccessToken != null">
+				suite_access_token = #{suiteAccessToken},
+			</if>
+			<if test="suiteAccessTokenExpireTime != null">
+				suite_access_token_expire_time = #{suiteAccessTokenExpireTime},
+			</if>
+			<if test="suiteTicket != null">
+				suite_ticket = #{suiteTicket},
+			</if>
+			<if test="corpAppid != null">
+				corp_appid = #{corpAppid},
+			</if>
+			<if test="updateTime != null">
+				update_time = #{updateTime}
+			</if>
+		</set>
+		WHERE id = #{id}
+	</update>
+
+	<select id="seachRefeshSuites" resultMap="BaseResultMap">
+		SELECT id, suite_key, suite_secret, token, encoding_aes_key, suite_access_token, suite_access_token_expire_time, description, suite_ticket, corp_appid
+		FROM suites
+		WHERE suite_access_token_expire_time  &lt; date_add(now(), interval 20 MINUTE)
+	</select>
+
+
+</mapper>

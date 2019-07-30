@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.enterprise.mapper.petFood.PetFoodMapper">
+    <resultMap id="BaseResultMap" type="com.enterprise.base.entity.PetFoodEntity">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="company_id" jdbcType="INTEGER" property="companyId"/>
+        <result column="user_id" jdbcType="INTEGER" property="userId"/>
+        <result column="food_count" jdbcType="INTEGER" property="foodCount"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+    </resultMap>
+
+    <sql id="baseColumnList">
+		id,company_id,user_id,food_count,create_time,update_time
+	</sql>
+
+    <insert id="createPetFood" parameterType="com.enterprise.base.entity.PetFoodEntity"
+            useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO pet_food (company_id,user_id,food_count,create_time,update_time)
+		VALUES (#{companyId},#{userId},#{foodCount},now(),now())
+		ON DUPLICATE KEY UPDATE company_id = #{companyId}, user_id=#{userId}, food_count=#{foodCount},update_time = now()
+	</insert>
+
+    <update id="updatePetFood" parameterType="com.enterprise.base.entity.PetFoodEntity">
+        update pet_food
+        <set>
+            <if test="foodCount!=null">
+                food_count = #{foodCount},
+            </if>
+            <if test="updateTime != null">
+                update_time = now(),
+            </if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <insert id="batchInsert" parameterType="java.util.List" >
+        INSERT INTO pet_food (company_id,user_id,food_count,create_time,update_time)
+        <foreach collection="petFoodList" item="item" index="index" separator="union all">
+            SELECT #{item.companyId},#{item.userId},#{item.foodCount}, now(),now() FROM DUAL
+        </foreach>
+    </insert>
+
+    <select id="getPetFood" resultMap="BaseResultMap">
+        SELECT * FROM pet_food WHERE company_id = #{companyId} AND user_id = #{userId}
+    </select>
+
+    <select id="getPetFoodList" resultMap="BaseResultMap">
+        SELECT * FROM pet_food WHERE food_count >0
+    </select>
+
+</mapper>

@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.enterprise.mapper.users.UserXDeptMapper">
+    <resultMap id="BaseResultMap" type="com.enterprise.base.entity.UserXDeptEntity">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="corp_id" jdbcType="VARCHAR" property="corpId"/>
+        <result column="dept_id" jdbcType="INTEGER" property="deptId"/>
+        <result column="dept_name" jdbcType="VARCHAR" property="deptName"/>
+        <result column="user_id" jdbcType="INTEGER" property="userId"/>
+        <result column="ding_user_id" jdbcType="INTEGER" property="dingUserId"/>
+        <result column="status" jdbcType="INTEGER" property="status"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+    </resultMap>
+
+    <sql id="baseColumnList">
+		id,corp_id,dept_id,dept_name,user_id,ding_user_id,status,create_time,update_time
+	</sql>
+
+    <insert id="createUserXDept" parameterType="com.enterprise.base.entity.UserXDeptEntity" useGeneratedKeys="true"
+            keyProperty="id">
+		INSERT INTO user_x_dept (corp_id,dept_id,dept_name,user_id,ding_user_id,status,create_time,update_time)
+		VALUES (#{corpId},#{deptId},#{deptName}, #{userId},#{dingUserId},#{status},#{createTime},#{updateTime})
+	</insert>
+
+    <update id="updateUserXDept" parameterType="com.enterprise.base.entity.UserXDeptEntity">
+        update user_x_dept
+        <set>
+            <if test="dingUserId != null and dingUserId != ''">
+                ding_user_id = #{dingUserId},
+            </if>
+            <if test="deptId != null">
+                dept_id = #{deptId},
+            </if>
+            <if test="deptName != null and deptName != ''">
+                dept_name = #{deptName},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="updateTime != null">
+                update_time = now(),
+            </if>
+
+        </set>
+        WHERE id = #{id}
+    </update>
+
+
+    <update id="batchSafeDelte" parameterType="com.enterprise.base.entity.UserXDeptEntity">
+        UPDATE user_x_dept SET status = #{status},update_time = now()
+        WHERE corp_id = #{corpId} AND user_id = #{userId}
+    </update>
+
+    <update id="batchSafeDelteDepartment">
+        UPDATE user_x_dept SET status = #{status},update_time = now()
+        WHERE corp_id = #{corpId} AND dept_id = #{deptId}
+    </update>
+
+    <select id="getUserDept" resultType="java.lang.Integer">
+		SELECT dept_id FROM user_x_dept ux,department d WHERE d.status = 1 AND ux.status = 1 AND ux.dept_id = d.id AND ux.corp_id = #{corpId} AND ux.user_id = #{userId} limit 0,1
+	</select>
+
+    <select id="getUserDeptName" resultType="java.lang.String">
+		SELECT dept_name FROM user_x_dept WHERE corp_id = #{corpId} AND user_id = #{userId} limit 0,1
+	</select>
+
+    <select id="getDeptsByCorpId" resultType="java.lang.Integer">
+		SELECT DISTINCT dept_id FROM user_x_dept WHERE corp_id = #{corpId} AND status=1
+	</select>
+
+    <select id="getByUserIdAndCorpIdAndDeptId" resultMap="BaseResultMap">
+		SELECT *  FROM user_x_dept WHERE corp_id = #{corpId} AND user_id = #{userId} AND dept_id = #{deptId} limit 0,1
+	</select>
+
+    <select id="getUserXDeptByCorpIdAndDeptId" resultMap="BaseResultMap">
+		SELECT *  FROM user_x_dept WHERE
+		corp_id = #{corpId}
+        <if test="dingUserId != null and dingUserId != ''">
+            AND ding_user_id = #{dingUserId}
+        </if>
+        AND dept_id = #{deptId} limit 0,1
+	</select>
+
+    <select id="getUserDeptids" resultType="java.lang.String">
+       select group_concat(dept_id) from user_x_dept where corp_id = #{corpId} and user_id = #{userId}
+    </select>
+
+    <select id="getUserInDept" resultMap="BaseResultMap">
+       select * from user_x_dept where corp_id = #{corpId} and dept_id = #{deptId}
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+    </select>
+
+    <select id="getUserInDeptAndName" resultMap="BaseResultMap">
+       select ux.* from user_x_dept ux,user u where ux.corp_id = #{corpId} and ux.dept_id = #{deptId}
+        AND ux.user_id = u.id
+        <if test="status != null">
+            AND ux.status = #{status} AND u.status = #{status}
+        </if>
+        <if test="name != null">
+            AND u.name like  CONCAT('%',#{name},'%')
+        </if>
+    </select>
+
+    <select id="getUserDepts" resultMap="BaseResultMap">
+       select * from user_x_dept where corp_id = #{corpId} and user_id = #{userId}
+        <if test="type != null and type ==1">
+            AND status = 1
+        </if>
+    </select>
+
+    <select id="getMyDeptList" resultType="com.enterprise.base.vo.UserXDeptVO">
+       SELECT id AS id,user_id AS userId,ding_user_id AS dingUserId,dept_id AS deptId,dept_name AS deptName
+        FROM user_x_dept where corp_id = #{corpId} AND user_id = #{userId} AND status = 1
+    </select>
+
+    <update id="batcUpdateUserXDepartment">
+        UPDATE user_x_dept SET status = #{status} WHERE corp_id = #{corpId}
+    </update>
+
+    <insert id="batchInsert" parameterType="java.util.List" >
+        insert into user_x_dept (corp_id,dept_id,dept_name,user_id,ding_user_id,status,create_time,update_time)
+        <foreach collection="userXDeptList" item="item" index="index" separator="union all">
+            SELECT #{item.corpId},#{item.deptId},#{item.deptName}, #{item.userId},#{item.dingUserId},#{item.status},#{item.createTime},#{item.updateTime} FROM DUAL
+        </foreach>
+    </insert>
+
+
+    <update id="batchUpdate">
+        UPDATE user_x_dept
+        <trim prefix="set" suffixOverrides=",">
+            <trim prefix="status=case" suffix="end,">
+                <foreach collection="userXDeptList" item="item" index="index">
+                    <if test="item.status!=null">
+                        when id=#{item.id} then #{item.status}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="dept_name=case" suffix="end,">
+                <foreach collection="userXDeptList" item="item" index="index">
+                    <if test="item.deptName!=null">
+                        when id=#{item.id} then #{item.deptName}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="update_time=case" suffix="end,">
+                <foreach collection="userXDeptList" item="item" index="index">
+                    <if test="item.updateTime!=null">
+                        when id=#{item.id} then now()
+                    </if>
+                </foreach>
+            </trim>
+        </trim>
+        where
+        <foreach collection="userXDeptList" separator="or" item="item" index="index">
+            id=#{item.id}
+        </foreach>
+    </update>
+
+</mapper>

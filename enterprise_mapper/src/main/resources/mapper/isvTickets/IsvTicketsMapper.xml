@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.enterprise.mapper.isvTickets.IsvTicketsMapper">
+	<resultMap id="BaseResultMap" type="com.enterprise.base.entity.IsvTicketsEntity">
+		<id column="id" jdbcType="INTEGER" property="id" />
+		<result column="corp_id" jdbcType="VARCHAR" property="corpId" />
+		<result column="company_id" jdbcType="INTEGER" property="companyId" />
+		<result column="suite_id" jdbcType="INTEGER" property="suiteId" />
+		<result column="corp_agent_id" jdbcType="VARCHAR" property="corpAgentId" />
+		<result column="corp_access_token" jdbcType="VARCHAR" property="corpAccessToken" />
+		<result column="corp_ticket" jdbcType="VARCHAR" property="corpTicket" />
+		<result column="corp_permanent_code" jdbcType="VARCHAR" property="corpPermanentCode" />
+		<result column="status" jdbcType="INTEGER" property="status" />
+		<result column="is_buy" jdbcType="INTEGER" property="isBuy" />
+		<result column="is_call" jdbcType="INTEGER" property="isCall" />
+		<result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+		<result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+	</resultMap>
+
+	<sql id="baseColumnList" >
+		id,corp_id,company_id,suite_id,corp_agent_id,corp_access_token,corp_ticket,corp_permanent_code,status,is_buy,is_call,create_time,update_time
+	</sql>
+
+	<insert id="createIsvTickets" parameterType="com.enterprise.base.entity.IsvTicketsEntity">
+		INSERT INTO isv_tickets(corp_id,company_id,suite_id,corp_agent_id,corp_access_token,corp_ticket,corp_permanent_code,status,is_buy,is_call,create_time,update_time)
+		VALUES (#{corpId}, #{companyId}, #{suiteId},#{corpAgentId}, #{corpAccessToken}, #{corpTicket}, #{corpPermanentCode}, #{status},#{isBuy}, #{isCall}, now(), now())
+	</insert>
+
+	<update id="modifyIsvTickets" parameterType="com.enterprise.base.entity.IsvTicketsEntity">
+		UPDATE isv_tickets
+		<set>
+			<if test="corpId != null and corpId != ''">
+				corp_id = #{corpId},
+			</if>
+			<if test="companyId != null and companyId != ''">
+				company_id = #{companyId},
+			</if>
+			<if test="suiteId != null and suiteId != ''">
+				suite_id = #{suiteId},
+			</if>
+			<if test="corpAgentId != null and corpAgentId != ''">
+				corp_agent_id = #{corpAgentId},
+			</if>
+			<if test="corpAccessToken != null and corpAccessToken != ''">
+				corp_access_token = #{corpAccessToken},
+			</if>
+			<if test="corpTicket != null and corpTicket != ''">
+				corp_ticket = #{corpTicket},
+			</if>
+			<if test="corpPermanentCode != null and corpPermanentCode != ''">
+				corp_permanent_code = #{corpPermanentCode},
+			</if>
+			<if test="status != null">
+				status = #{status},
+			</if>
+			<if test="isBuy != null">
+				is_buy = #{isBuy},
+			</if>
+			<if test="authUserId != null and authUserId != ''">
+				auth_user_id = #{authUserId},
+			</if>
+			<if test="isCall != null">
+				is_call = #{isCall},
+			</if>
+			update_time = now()
+		</set>
+		where id = #{id}
+	</update>
+
+	<select id="getIsvTicketByCorpId" resultMap="BaseResultMap">
+		SELECT
+			id, corp_id,company_id,suite_id,corp_agent_id,corp_access_token,corp_ticket,corp_permanent_code,status,create_time,update_time
+		FROM isv_tickets
+		WHERE corp_id =  #{corpId} LIMIT 0,1
+	</select>
+
+	<select id="getCompanyIdByCorpId" resultType="java.lang.Integer">
+		SELECT company_id
+		FROM isv_tickets
+		WHERE corp_id =  #{corpId} LIMIT 0,1
+	</select>
+
+	<select id="getIsvTicketByCompanyId" resultMap="BaseResultMap">
+		select
+		id,corp_id,company_id,suite_id,corp_agent_id,corp_access_token,corp_ticket,corp_permanent_code,is_call,status,create_time,update_time
+		from isv_tickets
+		WHERE company_id =  #{companyId}
+	</select>
+
+	<select id="getIsvTicketVOByCompanyId" resultType="com.enterprise.base.vo.TicketVO">
+		select  id AS id,corp_ticket AS ticket,corp_access_token AS accessToken,company_id AS companyId,
+		corp_id AS corpId,corp_agent_id AS agentId,update_time AS updatedAt
+		from isv_tickets
+		WHERE company_id =  #{companyId}
+	</select>
+
+	<select id="seachRefeshServiceTickets" resultMap="BaseResultMap">
+		SELECT i.id AS id ,i.corp_id AS corpId ,i.corp_permanent_code AS corpPermanentCode,i.suite_id AS suiteId FROM isv_tickets i
+		where i.status = 1  and corp_permanent_code is not null
+	</select>
+
+
+	<select id="getAllCompanys" resultMap="BaseResultMap">
+		SELECT *  FROM isv_tickets i
+		where i.status = 1
+	</select>
+
+
+	<select id="getNoAuthList" resultMap="BaseResultMap">
+		SELECT *  FROM isv_tickets
+		where id > 330 AND (auth_user_id IS NULL or is_call IS NULL)
+	</select>
+
+</mapper>

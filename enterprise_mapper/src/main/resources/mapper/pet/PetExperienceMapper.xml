@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.enterprise.mapper.pet.PetExperienceMapper">
+    <resultMap id="BaseResultMap" type="com.enterprise.base.entity.PetExperienceEntity">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="level" jdbcType="INTEGER" property="level"/>
+        <result column="experience_low" jdbcType="INTEGER" property="experienceLow"/>
+        <result column="experience_high" jdbcType="INTEGER" property="experienceHigh"/>
+        <result column="physical_value" jdbcType="INTEGER" property="physicalValue"/>
+        <result column="max_physical_value" jdbcType="INTEGER" property="maxPhysicalValue"/>
+        <result column="status" jdbcType="INTEGER" property="status"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+    </resultMap>
+
+    <sql id="baseColumnList">
+		id,level,experience_low,experience_high,physical_value,max_physical_value,status,create_time,update_time
+	</sql>
+
+    <select id="getByLevel" resultMap="BaseResultMap">
+		SELECT * FROM pet_experience WHERE status = 1 AND level = #{level}
+	</select>
+
+    <select id="getByExperienceLow" resultMap="BaseResultMap">
+		SELECT * FROM pet_experience WHERE status = 1 AND experience_low = #{low}
+	</select>
+
+    <select id="getByExperience" resultMap="BaseResultMap">
+		SELECT * FROM pet_experience WHERE status = 1 AND  #{ecperienceValue} between experience_low AND experience_high
+	</select>
+
+    <select id="getMaxLevel" resultMap="BaseResultMap">
+        SELECT * FROM pet_experience WHERE status = 1 AND
+        level = (SELECT MAX(level) FROM pet_experience)
+	</select>
+</mapper>

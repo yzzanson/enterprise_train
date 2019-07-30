@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.enterprise.mapper.department.DepartmentMapper">
+    <resultMap id="BaseResultMap" type="com.enterprise.base.entity.DepartmentEntity">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="company_id" jdbcType="INTEGER" property="companyId"/>
+        <result column="ding_dept_id" jdbcType="INTEGER" property="dingDeptId"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="parent_id" jdbcType="INTEGER" property="parentId"/>
+        <result column="status" jdbcType="INTEGER" property="status"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+    </resultMap>
+
+    <sql id="baseColumnList">
+		id,company_id,ding_dept_id,name,parent_id,status,create_time,update_time
+	</sql>
+
+    <insert id="insertSingle" parameterType="com.enterprise.base.entity.DepartmentEntity" useGeneratedKeys="true">
+		insert into department (company_id, ding_dept_id,name,status,create_time,update_time,parent_id)
+		VALUES
+			(#{companyId}, #{dingDeptId}, #{name},#{status},now(),now(),#{parentId})
+	</insert>
+
+    <insert id="insertBatch" parameterType="java.util.List">
+        insert into department (company_id, ding_dept_id,name,status,create_time,update_time,parent_id)
+        <foreach collection="deptList" item="item" index="index" separator="union all">
+            SELECT #{item.companyId}, #{item.dingDeptId}, #{item.name},
+            #{item.status},now(),now(),#{item.parentId} FROM DUAL
+        </foreach>
+    </insert>
+
+
+    <update id="updateDepartment" parameterType="com.enterprise.base.entity.DepartmentEntity">
+        update department
+        <set>
+            <if test="companyId != null and companyId != ''">
+                company_id = #{companyId},
+            </if>
+            <if test="dingDeptId != null and dingDeptId != ''">
+                ding_dept_id = #{dingDeptId},
+            </if>
+            <if test="updateTime != null">
+                update_time = now(),
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="parentId != null and parentId != ''">
+                parent_id = #{parentId},
+            </if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <select id="selectDeptByDingDeptIds" resultType="com.enterprise.base.entity.DepartmentEntity">
+        SELECT id,company_id,ding_dept_id,name,parent_id,status from department where company_id =#{companyId} and
+        ding_dept_id in
+        <foreach collection="dingDeptIds" item="dingDeptId" open="(" close=")" separator=",">
+            #{dingDeptId}
+        </foreach>
+    </select>
+
+    <select id="getDeptNameById" resultType="java.lang.String">
+		SELECT name FROM department WHERE id = #{id} and company_id = #{companyId}
+	</select>
+
+    <select id="getDingDepartIdById" resultType="java.lang.String">
+		SELECT ding_dept_id FROM department WHERE id = #{id}
+	</select>
+
+    <select id="getDeptsByCompanyId" resultMap="BaseResultMap">
+        SELECT * FROM department WHERE company_id = #{companyId}
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+    </select>
+
+    <select id="getByCompanyIdAndDingDeptId" resultMap="BaseResultMap">
+		SELECT * FROM department WHERE company_id = #{companyId}
+		AND ding_dept_id = #{dingDeptId}
+	</select>
+
+    <select id="getIdByCompanyIdAndDingDeptId" resultType="java.lang.Integer">
+		SELECT id FROM department WHERE company_id = #{companyId}
+		AND ding_dept_id = #{dingDeptId}
+	</select>
+
+    <select id="getDepartmentsByParentId" resultMap="BaseResultMap">
+		SELECT * FROM department WHERE company_id = #{companyId}
+		AND parent_id = #{parentId} AND status = 1
+	</select>
+
+    <select id="getDepartmentById" resultMap="BaseResultMap">
+		SELECT * FROM department WHERE id = #{id}
+	</select>
+
+    <update id="batchUpdateDepartment">
+		UPDATE department SET status = #{status} WHERE company_id = #{companyId}
+	</update>
+
+    <update id="batchUpdateDepartment2">
+        UPDATE department
+        <trim prefix="set" suffixOverrides=",">
+            <trim prefix="name=case" suffix="end,">
+                <foreach collection="departmentList" item="item" index="index">
+                    <if test="item.name!=null">
+                        when id=#{item.id} then #{item.name}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="status=case" suffix="end,">
+                <foreach collection="departmentList" item="item" index="index">
+                    <if test="item.status!=null">
+                        when id=#{item.id} then #{item.status}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="parent_id=case" suffix="end,">
+                <foreach collection="departmentList" item="item" index="index">
+                    <if test="item.parentId!=null">
+                        when id=#{item.id} then #{item.parentId}
+                    </if>
+                </foreach>
+            </trim>
+        </trim>
+        where
+        <foreach collection="departmentList" separator="or" item="item" index="index">
+            id=#{item.id}
+        </foreach>
+    </update>
+
+    <select id="getUnauthDepartments" resultMap="BaseResultMap">
+        SELECT * FROM department WHERE company_id = #{companyId} AND <![CDATA[ ding_dept_id <> 1 ]]>
+    </select>
+
+</mapper>

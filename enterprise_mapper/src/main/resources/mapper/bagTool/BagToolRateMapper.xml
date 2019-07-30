@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.enterprise.mapper.bagTool.BagToolRateMapper">
+	<resultMap id="BaseResultMap" type="com.enterprise.base.entity.BagToolRateEntity">
+		<id column="id" jdbcType="INTEGER" property="id" />
+		<result column="event_type" jdbcType="INTEGER" property="eventType" />
+		<result column="tool_id" jdbcType="INTEGER" property="toolId" />
+		<result column="rate" jdbcType="INTEGER" property="rate" />
+	</resultMap>
+
+	<sql id="baseColumnList" >
+		id,event_type,tool_id,rate
+	</sql>
+
+	<select id="getByEventType" resultMap="BaseResultMap">
+		SELECT * FROM bag_tool_rate WHERE event_type = #{eventType}
+	</select>
+
+	<select id="getByToolId" resultMap="BaseResultMap">
+		SELECT * FROM bag_tool_rate WHERE tool_id = #{toolId}
+	</select>
+
+
+</mapper>

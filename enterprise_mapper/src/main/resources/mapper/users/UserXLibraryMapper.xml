@@ -1,0 +1,419 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.enterprise.mapper.users.UserXLibraryMapper">
+    <resultMap id="BaseResultMap" type="com.enterprise.base.entity.UserXLibraryEntity">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="company_id" jdbcType="INTEGER" property="companyId"/>
+        <result column="user_id" jdbcType="INTEGER" property="userId"/>
+        <result column="library_id" jdbcType="INTEGER" property="libraryId"/>
+        <result column="schedule" jdbcType="INTEGER" property="schedule"/>
+        <result column="answer_count" jdbcType="INTEGER" property="answerCount"/>
+        <result column="last_answer_time" jdbcType="TIMESTAMP" property="lastAnswerTime"/>
+        <result column="finish_time" jdbcType="DATE" property="finishTime"/>
+        <result column="is_update" jdbcType="INTEGER" property="isUpdate"/>
+        <result column="status" jdbcType="INTEGER" property="status"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+    </resultMap>
+
+    <sql id="baseColumnList">
+		id,company_id,user_id,library_id,schedule,answer_count,last_answer_time,finish_time,is_update,status,create_time,update_time
+	</sql>
+
+
+    <insert id="createOrUpdateUserXLibrary" parameterType="com.enterprise.base.entity.UserXLibraryEntity"
+            useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO user_x_library (company_id,user_id,library_id, schedule,answer_count,is_update, status, create_time, update_time)
+		VALUES (#{companyId},#{userId}, #{libraryId},#{schedule},#{answerCount},#{isUpdate},#{status},now(),now())
+		ON DUPLICATE KEY UPDATE schedule = #{schedule}, last_answer_time = now(), status = #{status}, update_time = now();
+	</insert>
+
+    <insert id="batchInsertuserxlibrary" parameterType="java.util.List">
+        insert into user_x_library (user_id,company_id,library_id, schedule,answer_count, last_answer_time,
+          status, create_time,update_time)
+        <foreach collection="userXLibraryList" item="item" index="index" separator="union all">
+            SELECT #{item.userId}, #{item.companyId},#{item.libraryId}, #{item.schedule}, #{item.answerCount}, null,
+            #{item.status},#{item.createTime},#{item.updateTime} FROM DUAL
+        </foreach>
+    </insert>
+
+
+    <update id="updateUserXLibrary" parameterType="com.enterprise.base.entity.UserXLibraryEntity">
+        update user_x_library
+        <set>
+            <if test="schedule != null">
+                schedule = #{schedule},
+            </if>
+            <if test="lastAnswerTime != null">
+                last_answer_time = now(),
+            </if>
+            <if test="finishTime != null">
+                finish_time = now(),
+            </if>
+            <if test="isUpdate != null">
+                is_update = #{isUpdate},
+            </if>
+            <if test="answerCount != null">
+                answer_count = #{answerCount},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="updateTime != null">
+                update_time = now(),
+            </if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateFinishTime" parameterType="com.enterprise.base.entity.UserXLibraryEntity">
+        update user_x_library
+        <set>
+            <if test="finishTime != null">
+                last_answer_time = #{finishTime},
+            </if>
+            <if test="finishTime != null">
+                finish_time = #{finishTime},
+            </if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <update id="batchDelete" parameterType="com.enterprise.base.entity.UserXLibraryEntity">
+        update user_x_library
+        <set>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="updateTime != null">
+                update_time = now(),
+            </if>
+        </set>
+        WHERE library_id = #{libraryId} AND company_id = #{companyId}
+    </update>
+
+
+    <select id="getStudyCountByLibraryId" resultType="java.lang.Integer">
+		SELECT COUNT(ux.id) FROM user_x_library ux,isv_tickets isv,user_x_company uxc
+		WHERE ux.company_id = isv.company_id AND isv.corp_id = uxc.corp_id AND ux.user_id = uxc.user_id AND
+		ux.company_id = #{companyId} AND ux.library_id = #{libraryId} AND ux.status = 1
+		AND uxc.status = 1
+	</select>
+
+    <select id="findUserStudySchedule" resultType="com.enterprise.base.vo.UserXLibraryVO">
+		SELECT ul.id AS id,u.name AS name,ul.schedule AS schedule,
+		DATE_FORMAT(ul.last_answer_time,'%Y-%m-%d %H:%i:%s') AS lastAnswerTime
+		 FROM user_x_library ul,user u  WHERE
+		 ul.user_id = u.id AND
+		 ul.library_id = #{libraryId}
+		 ORDER BY ul.schedule DESC
+	</select>
+
+    <!--<select id="getCompanyLibraryByUser" resultType="com.enterprise.base.vo.UserXLibraryVO2">-->
+        <!--SELECT * FROM (-->
+            <!--SELECT ul.schedule,ql.company_id,ul.library_id AS id,ql.name AS libraryName,ql.id AS libraryId,ql.label AS label,-->
+                  <!--IFNULL(ul.is_update,0) AS isUpdate FROM user_x_library ul,questions_library ql-->
+                  <!--WHERE ul.library_id = ql.id AND ul.user_id = #{userId} AND ul.status = 1 AND ul.company_id = #{companyId} AND ul.library_id IN (-->
+                      <!--SELECT qql.id FROM questions_library qql,questions qq  WHERE qql.company_id = #{companyId} AND qql.status =1 AND-->
+                      <!--qql.subject = 1 and qq.library_id = qql.id and qql.status = 1  group by qq.library_id having count(qq.id) >=5)-->
+                    <!--ORDER BY ul.schedule DESC-->
+        <!--) t1-->
+    <!--</select>-->
+
+
+
+    <!--<select id="getDefaultPublicQuestionLibrary" resultType="com.enterprise.base.vo.UserXLibraryVO2">-->
+         <!--SELECT id AS libraryId,name AS libraryName,label FROM (-->
+           <!--SELECT ql.id,ql.name,ql.label FROM questions_library ql,company_x_library cx  WHERE ql.id = cx.library_id AND ql.status = 1 AND ql.subject = 2 AND ql.default_flag = 1 AND cx.company_id = #{companyId} AND cx.status =1-->
+              <!--UNION-->
+           <!--SELECT ql.id,ql.name,ql.label FROM questions_library ql,company_x_library cx  WHERE ql.id = cx.library_id AND ql.status = 1 AND ql.subject = 2 AND ql.default_flag = 1 AND cx.company_id = 0 AND cx.status = 1-->
+        <!--) A GROUP BY id,name,label-->
+	<!--</select>-->
+
+    <select id="getDefaultDingPublicQuestionLibrary" resultType="com.enterprise.base.vo.UserXLibraryVO2">
+         SELECT ux.id AS id,ql.name AS name,ql.label AS label,ql.id AS libraryId FROM user_x_library ux,
+            questions_library ql WHERE ux.library_id = ql.id AND ux.company_id = #{companyId}
+           AND ux.user_id = #{userId} AND ql.subject = 2 AND ql.status = 1 AND ql.label =  #{search}
+           AND ux.status = 1
+	</select>
+
+    <select id="getPublicLibraryByUser" resultType="com.enterprise.base.vo.UserXLibraryVO2">
+        SELECT * FROM (
+            SELECT ul.schedule,ql.company_id,ul.library_id AS id,ql.name AS libraryName,ql.id AS libraryId,
+                 IFNULL(ul.is_update,0) AS isUpdate FROM user_x_library ul,questions_library ql
+                 WHERE ul.library_id = ql.id AND ul.user_id =#{userId} AND ul.company_id = #{companyId} AND ul.status =1
+                  AND ul.library_id IN (
+                     SELECT qql.id FROM company_x_library cl,questions_library qql,questions qq
+                      WHERE cl.company_id = #{companyId} AND cl.status = 1 and qql.status =1 and qq.status = 1
+                 and  cl.library_id = qql.id and qq.library_id = qql.id group by qq.library_id having count(qq.id) >=5
+                 ) ORDER BY ul.schedule DESC
+        )  t2
+	</select>
+
+    <select id="getByUserIdAndLibraryId" resultMap="BaseResultMap">
+	  SELECT id AS id,company_id AS companyId ,user_id AS userId,library_id AS libraryId,
+      schedule AS schedule,answer_count AS answerCount,last_answer_time AS lastAnswerTime,
+      DATE_FORMAT(finish_time,'%Y-%m-%d %H:%i:%s') AS finishTime,is_update AS isUpdate,
+      status AS status,create_time AS createTime,update_time AS updateTime
+       FROM user_x_library WHERE company_id = #{companyId} AND user_id = #{userId} AND library_id = #{libraryId} LIMIT 0,1
+	</select>
+
+    <select id="getByLibraryId" resultMap="BaseResultMap">
+		SELECT id AS id,company_id AS companyId ,user_id AS userId,library_id AS libraryId,
+        schedule AS schedule,answer_count AS answerCount,last_answer_time AS lastAnswerTime,
+        DATE_FORMAT(finish_time,'%Y-%m-%d %H:%i:%s') AS finishTime,is_update AS isUpdate,
+        status AS status,create_time AS createTime,update_time AS updateTime
+        FROM user_x_library WHERE library_id = #{libraryId}
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+	</select>
+
+
+    <update id="updateSchedule" parameterType="com.enterprise.base.entity.UserXLibraryEntity">
+        update user_x_library
+        <set>
+            <if test="schedule != null">
+                schedule = #{schedule},
+            </if>
+            <if test="updateTime != null">
+                update_time = now(),
+            </if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <select id="getChallengeUser" resultType="com.enterprise.base.vo.UserDeptVO">
+        SELECT aa.userId AS userId,u.avatar AS avatar,u.name AS name FROM (
+        SELECT DISTINCT(ul.user_id) AS userId FROM user_x_library ul
+        WHERE ul.user_id IN (SELECT user_id from user_x_company WHERE corp_id = #{corpId} AND status = 1)
+        AND ul.library_id = #{libraryId} AND ul.status = 1
+        ) aa,user u WHERE aa.userId = u.id
+        AND <![CDATA[ aa.userId <> #{userId} ]]>
+        <if test="search != null">
+            AND u.name Like CONCAT('%',#{search},'%')
+        </if>
+        GROUP BY aa.userId,u.avatar,u.name
+        ORDER BY u.id DESC
+    </select>
+
+    <select id="getUserIdsByLibraryId" resultType="java.lang.Integer">
+		SELECT user_id FROM user_x_library WHERE library_id = #{libraryId} AND status = 1
+	</select>
+
+    <select id="getUserByCorpIdAndLibraryId" resultType="java.lang.Integer">
+		SELECT user_id FROM user_x_library WHERE library_id = #{libraryId} AND
+		user_id IN (SELECT user_id FROM user_x_company WHERE corp_id = #{corpId}) AND company_id = #{compnayId}
+	</select>
+
+    <select id="getByCompanyIdAndUserId" resultType="java.lang.Integer">
+		SELECT library_id FROM user_x_library WHERE company_id = #{compnayId} AND user_id = #{userId}
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+	</select>
+
+
+    <!--同步用-->
+    <select id="getTotalCountInDB" resultType="java.lang.Integer">
+		SELECT COUNT(id) FROM user_x_library
+	</select>
+
+    <select id="getCountRecord" resultMap="BaseResultMap">
+		SELECT id AS id,company_id AS companyId ,user_id AS userId,library_id AS libraryId,
+      schedule AS schedule,answer_count AS answerCount,last_answer_time AS lastAnswerTime,
+      DATE_FORMAT(finish_time,'%Y-%m-%d %H:%i:%s') AS finishTime,is_update AS isUpdate,
+      status AS status,create_time AS createTime,update_time AS updateTime
+       FROM user_x_library LIMIT #{start},#{end}
+	</select>
+
+    <!--
+    <update id="batchUpdate" parameterType="java.util.List">
+        update user_x_library
+        set company_id =
+        <foreach collection="userXLibraryList" item="item" index="index" separator=" " open="case ID" close="end">
+            when #{item.id} then #{item.companyId}
+        </foreach>
+        where id in
+        <foreach collection="userXLibraryList" index="index" item="item"
+                 separator="," open="(" close=")">
+            #{item.id,jdbcType=BIGINT}
+        </foreach>
+    </update>
+
+    <update id="batchUpdate2" parameterType="java.util.List">
+        update user_x_library
+        set status =
+        <foreach collection="userXLibraryList" item="item" index="index" separator=" " open="case ID" close="end">
+            when #{item.id} then #{item.status}
+        </foreach>
+        where id in
+        <foreach collection="userXLibraryList" index="index" item="item"
+                 separator="," open="(" close=")">
+            #{item.id,jdbcType=BIGINT}
+        </foreach>
+    </update>
+    -->
+
+    <update id="batchUpdateNew" parameterType="java.util.List">
+        update user_x_library
+        <trim prefix="set" suffixOverrides=",">
+            <trim prefix="status =case" suffix="end,">
+              <foreach collection="userXLibraryList" item="i" index="index">
+                  <if test="i.status!=null">
+                    when id=#{i.id} then #{i.status}
+                 </if>
+              </foreach>
+            </trim>
+            <trim prefix="company_id =case" suffix="end,">
+                <foreach collection="userXLibraryList" item="i" index="index">
+                    <if test="i.companyId!=null">
+                        when id=#{i.id} then #{i.companyId}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="schedule =case" suffix="end,">
+                <foreach collection="userXLibraryList" item="i" index="index">
+                    <if test="i.schedule!=null">
+                        when id=#{i.id} then #{i.schedule}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="answer_count =case" suffix="end,">
+                <foreach collection="userXLibraryList" item="i" index="index">
+                    <if test="i.answerCount!=null">
+                        when id=#{i.id} then #{i.answerCount}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="update_time =case" suffix="end,">
+                <foreach collection="userXLibraryList" item="i" index="index">
+                    <if test="i.updateTime!=null">
+                        when id=#{i.id} then now()
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="finish_time =case" suffix="end,">
+                <foreach collection="userXLibraryList" item="i" index="index">
+                    <if test="i.finishTime!=null">
+                        when id=#{i.id} then now()
+                    </if>
+                    <if test="i.finishTime==null">
+                        when id=#{i.id} then null
+                    </if>
+                </foreach>
+            </trim>
+        </trim>
+        where id in
+        <foreach collection="userXLibraryList" index="index" item="item"
+                 separator="," open="(" close=")">
+            #{item.id,jdbcType=BIGINT}
+        </foreach>
+    </update>
+
+
+
+
+    <update id="batchUpdateState">
+	update user_x_library is_update = #{isUpdate},schedule = 0,answer_count = 0 WHERE libraryId = #{libraryId}
+	</update>
+
+    <select id="getAllUser" resultType="com.enterprise.base.vo.UserDeptVO">
+	  SELECT ux.user_id AS userId,u.avatar AS avatar,u.name AS name  FROM user_x_company ux,user u WHERE ux.user_id = u.id
+	  AND ux.corp_id = #{corpId} AND ux.status =1
+      <if test="search != null">
+         AND u.name Like CONCAT('%',#{search},'%')
+      </if>
+	  ORDER BY u.id ASC
+	</select>
+
+
+    <!--
+        SELECT COUNT(id) FROM user_x_library ux,isv_tickets isv,user_x_company uxc
+		WHERE ux.company_id = isv.company_id AND isv.corp_id = uxc.corp_id AND ux.user_id = uxc.user_id AND
+		ux.company_id = #{companyId} AND ux.library_id = #{libraryId} AND ux.status = 1
+		AND uxc.status = 1
+    -->
+    <select id="getStudyCountByLibraryIdAndSchedule" resultMap="BaseResultMap">
+	  SELECT ux.id AS id,ux.company_id AS companyId ,ux.user_id AS userId,ux.library_id AS libraryId,
+        ux.schedule AS schedule,ux.answer_count AS answerCount,ux.last_answer_time AS lastAnswerTime,
+        DATE_FORMAT(ux.finish_time,'%Y-%m-%d %H:%i:%s') AS finishTime,ux.is_update AS isUpdate,
+        ux.status AS status,ux.create_time AS createTime,ux.update_time AS updateTime
+        FROM user_x_library ux,isv_tickets isv,user_x_company uxc WHERE
+        ux.company_id = isv.company_id AND isv.corp_id = uxc.corp_id AND ux.user_id = uxc.user_id AND
+        ux.company_id = #{companyId} AND ux.library_id = #{libraryId}
+        AND ux.status = 1 AND uxc.status = 1
+      <if test="type != null and type==0">
+         AND <![CDATA[ ux.schedule < 100 ]]>
+      </if>
+      <if test="type != null and type==1">
+        AND <![CDATA[ ux.schedule = 100 ]]>
+      </if>
+	  ORDER BY ux.finish_time DESC
+	</select>
+
+    <select id="getCorrectCount" resultType="java.lang.Integer">
+        SELECT COUNT(s.user_id) FROM (
+        SELECT company_id,question_id,user_id FROM user_x_questions ux WHERE id IN (
+          SELECT id FROM user_x_questions WHERE company_id = #{companyId} AND
+          question_id IN (SELECT id FROM questions WHERE library_id = #{libraryId}
+          AND status =1 and id not in (SELECT question_id FROM user_x_questions WHERE user_id  = #{userId} AND answer_status = 2 AND company_id = #{companyId}))
+          AND (status = 1 or status = 2)
+         ) AND  user_id  =  #{userId}  GROUP BY company_id,question_id,user_id
+         ) s
+    </select>
+
+    <select id="getCommonUserLibrary" resultType="com.enterprise.base.vo.UserXLibraryVO2">
+        SELECT ux.id AS id,ql.name AS libraryName,ql.update_time AS lastAnswerTime,
+        ql.id AS libraryId,ux.is_update AS isUpdate,ql.total_count AS totalCount FROM user_x_library ux,questions_library ql
+        WHERE ux.library_id = ql.id AND ux.status = 1 AND ql.status = 1
+        AND  ux.company_id = #{companyId} and ux.user_id = #{userId}
+        <if test="type != null and type==1">
+            AND ql.subject = 2 AND  <![CDATA[ ql.label <> '钉钉' ]]>
+        </if>
+        <if test="type != null and type==2">
+            AND ql.subject = 1
+        </if>
+        <if test="type != null and type==4">
+            AND ql.subject = 2 AND  ql.label = '钉钉'
+        </if>
+        ORDER BY ux.schedule DESC,ql.create_time ASC
+    </select>
+
+    <select id="getAchieveUserLibrary" resultType="com.enterprise.base.vo.UserXLibraryVO2">
+      SELECT ux.id AS id,ql.name AS libraryName,ql.update_time AS lastAnswerTime,
+        ql.id AS libraryId,ux.is_update AS isUpdate,ql.total_count AS totalCount FROM user_x_library ux,questions_library ql
+       WHERE ux.library_id = ql.id AND ux.status = 1 AND ql.status = 1
+       AND  ux.company_id =  #{companyId} and ux.user_id = #{userId} AND ux.schedule = 100
+       ORDER BY ux.finish_time DESC,ux.id ASC
+    </select>
+
+    <select id="getFinishedList" resultMap="BaseResultMap">
+      SELECT id AS id,company_id AS companyId ,user_id AS userId,library_id AS libraryId,
+      schedule AS schedule,answer_count AS answerCount,last_answer_time AS lastAnswerTime,
+      DATE_FORMAT(finish_time,'%Y-%m-%d %H:%i:%s') AS finishTime,is_update AS isUpdate,
+      status AS status,create_time AS createTime,update_time AS updateTime FROM user_x_library ux
+       WHERE schedule = 100 AND status = 1
+    </select>
+
+    <select id="getFinishedNoTimeList" resultMap="BaseResultMap">
+      SELECT * FROM user_x_library ux
+       WHERE schedule = 100 AND status = 1 AND finish_time IS NULL
+    </select>
+
+    <select id="getUserAchievePublicLibraryList" resultType="com.enterprise.base.vo.UserXLibraryScheduleVO">
+        SELECT ux.user_id AS userId FROM user_x_library ux,questions_library ql WHERE ux.company_id = #{companyId}
+        AND ux.library_id = ql.id AND ql.status = 1 AND ql.subject = 2 AND ux.schedule = 100
+        GROUP BY ux.user_id
+        ORDER BY ux.finish_time ASC LIMIT 0,5
+    </select>
+
+    <select id="getUserAchievePublicLibrary" resultType="java.lang.String">
+        SELECT ql.name FROM user_x_library ux,questions_library ql WHERE ux.company_id = #{companyId}
+        AND ux.library_id = ql.id AND ql.status = 1 AND ql.subject = 2 AND ux.schedule = 100
+        AND ux.user_id = #{userId}
+        ORDER BY ux.create_time DESC LIMIT 0,1
+    </select>
+
+
+</mapper>

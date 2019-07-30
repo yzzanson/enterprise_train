@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.enterprise.mapper.petFood.PetFoodDetailMapper">
+    <resultMap id="BaseResultMap" type="com.enterprise.base.entity.PetFoodDetailEntity">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="company_id" jdbcType="INTEGER" property="companyId"/>
+        <result column="user_id" jdbcType="INTEGER" property="userId"/>
+        <result column="type" jdbcType="INTEGER" property="type"/>
+        <result column="food_count" jdbcType="INTEGER" property="foodCount"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+    </resultMap>
+
+    <sql id="baseColumnList">
+		id,company_id,user_id,type,food_count,create_time,update_time
+	</sql>
+
+    <insert id="createPetFoodDetail" parameterType="com.enterprise.base.entity.PetFoodDetailEntity"
+            useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO pet_food_detail (company_id,user_id,type,food_count,create_time,update_time)
+		VALUES (#{companyId},#{userId},#{type},#{foodCount},now(),now())
+		ON DUPLICATE KEY UPDATE company_id = #{companyId}, user_id=#{userId}, food_count=#{foodCount},update_time = now()
+	</insert>
+
+    <update id="updatePetFoodDetail" parameterType="com.enterprise.base.entity.PetFoodDetailEntity">
+        update pet_food
+        <set>
+            <if test="foodCount!=null">
+                food_count = #{foodCount},
+            </if>
+            <if test="type >0 ">
+                type = #{type},
+            </if>
+            <if test="updateTime!= null">
+                update_time = now(),
+            </if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <insert id="batchInsert" parameterType="java.util.List" >
+        INSERT INTO pet_food_detail (company_id,user_id,type,food_count,create_time,update_time)
+        <foreach collection="petFoodDetailList" item="item" index="index" separator="union all">
+            SELECT #{item.companyId},#{item.userId},#{item.type},#{item.foodCount}, now(),now() FROM DUAL
+        </foreach>
+    </insert>
+
+    <!--获取初始化记录-->
+    <select id="getByCompanyAndUserId" resultMap="BaseResultMap">
+        SELECT * FROM pet_food_detail WHERE company_id = #{companyId} AND user_id = #{userId}
+        AND type = 1
+    </select>
+
+    <select id="getUserPetFoodCount" resultType="java.lang.Integer">
+        SELECT SUM(food_count) FROM pet_food_detail  WHERE user_id  = #{userId} AND company_id = #{companyId}
+    </select>
+
+</mapper>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.enterprise.mapper.rank.WeekRankMapper">
+    <resultMap id="BaseResultMap" type="com.enterprise.base.entity.WeekRankEntity">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="company_id" jdbcType="INTEGER" property="companyId"/>
+        <result column="user_id" jdbcType="INTEGER" property="userId"/>
+        <result column="rank" jdbcType="INTEGER" property="rank"/>
+        <result column="weight" jdbcType="INTEGER" property="weight"/>
+        <result column="title" jdbcType="VARCHAR" property="title"/>
+        <result column="title_type" jdbcType="INTEGER" property="titleType"/>
+        <result column="date_time" jdbcType="VARCHAR" property="dateTime"/>
+    </resultMap>
+
+    <sql id="baseColumnList">
+		id,company_id,user_id,rank,title,title_type,date_time
+	</sql>
+
+    <insert id="batchInsert" parameterType="java.util.List" >
+        insert into week_rank (company_id,user_id,rank,weight,title,title_type,date_time)
+        <foreach collection="weekRankList" item="item" index="index" separator="union all">
+            SELECT #{item.companyId},#{item.userId}, #{item.rank}, #{item.weight}, #{item.title}, #{item.titleType}, #{item.dateTime} FROM DUAL
+        </foreach>
+    </insert>
+
+    <update id="singleDelete">
+        DELETE FROM week_rank WHERE  <![CDATA[ date_time < #{date} ]]> AND company_id = #{companyId}
+    </update>
+
+    <select id="getWeekRankByCompanyId" resultMap="BaseResultMap">
+      SELECT * FROM week_rank WHERE date_time = #{date} AND company_id = #{companyId} ORDER BY rank ASC
+    </select>
+
+
+
+</mapper>

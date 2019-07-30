@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.enterprise.mapper.right.RightResourceUrlMapper">
+    <resultMap id="BaseResultMap" type="com.enterprise.base.entity.right.RightResourceUrlEntity">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="url" jdbcType="VARCHAR" property="url"/>
+        <result column="parent_id" jdbcType="INTEGER" property="parentId"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="orders" jdbcType="INTEGER" property="orders"/>
+        <result column="is_operate" jdbcType="INTEGER" property="isOperate"/>
+        <result column="type" jdbcType="VARCHAR" property="type"/>
+        <result column="status" jdbcType="INTEGER" property="status"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+    </resultMap>
+
+    <sql id="baseColumnList">
+		id,url,parent_id,name,orders,is_operate,type,status,create_time,update_time
+	</sql>
+
+
+    <insert id="createRightResourceUrl" parameterType="com.enterprise.base.entity.right.RightResourceUrlEntity"
+            useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO right_resource_group (url, parent_id, name, orders,is_operator, type,create_time, update_time)
+		VALUES (#{url},#{parentId}, #{name},#{orders},#{isOperate},#{type},#{createTime},#{updateTime})
+	</insert>
+
+
+    <select id="getResourceByParent" resultMap="BaseResultMap">
+        SELECT * FROM right_resource_url WHERE parent_id = #{parentId}
+        <if test="isOperate != null">
+            AND is_operate = #{isOperate}
+        </if>
+    </select>
+
+    <select id="getResourceByOperate" resultMap="BaseResultMap">
+        SELECT * FROM right_resource_url WHERE 1=1
+        <if test="isOperate != null">
+            AND is_operate = #{isOperate}
+        </if>
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+        <if test="isTop != null and isTop==1">
+            AND parent_id is null
+        </if>
+    </select>
+
+
+    <select id="findRightResourcesByGroupIds" resultMap="BaseResultMap">
+        SELECT
+        rru.id, rru.url, rru.parent_id, rru.name, rru.orders,rru.type, rru.status, rru.create_time,rru.update_time
+        FROM right_resource_url rru, right_resource_group rrg
+        <where>
+            rru.id = rrg.right_resource_id
+            AND rru.status = 1
+            AND rrg.status = 1
+            AND rrg.right_group_id IN
+            <foreach collection="groupIdList" open="(" item="item" close=")" separator=",">
+                #{item}
+            </foreach>
+        </where>
+    </select>
+
+
+    <select id="getAllResources" resultMap="BaseResultMap">
+        SELECT rru.* FROM right_resource_url rru,right_resource_group  rrg,user_right_group urg
+        WHERE urg.right_group_id = rrg.right_group_id AND rrg.right_resource_id = rru.id
+        AND rru.status = 1 AND rrg.status = 1 AND urg.user_id = #{userId}
+	</select>
+
+
+    <select id="getParentIdsByResourceIds" resultType="java.lang.Integer">
+        SELECT distinct(rru.parent_id)
+        FROM right_resource_url rru
+        WHERE rru.status = 1
+        AND rru.id IN
+        <foreach collection="resourceIdList" open="(" item="item" close=")" separator=",">
+            #{item}
+        </foreach>
+    </select>
+
+    <select id="getParentByResourceId" resultMap="BaseResultMap">
+        SELECT *
+        FROM right_resource_url rru
+        WHERE rru.status = 1
+        AND rru.id = #{resourceId}
+    </select>
+
+
+</mapper>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.enterprise.mapper.pet.PetMapper">
+	<resultMap id="BaseResultMap" type="com.enterprise.base.entity.PetEntity">
+		<id column="id" jdbcType="INTEGER" property="id" />
+		<result column="type" jdbcType="INTEGER" property="type" />
+		<result column="init_pic" jdbcType="VARCHAR" property="initPic" />
+		<result column="final_pic" jdbcType="VARCHAR" property="finalPic" />
+		<result column="status" jdbcType="INTEGER" property="status" />
+		<result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+		<result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+	</resultMap>
+
+	<sql id="baseColumnList" >
+		id,type,init_pic,final_pic,status,create_time,update_time
+	</sql>
+
+
+	<insert id="createOrUpdatePet" parameterType="com.enterprise.base.entity.PetEntity"
+			useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO pet (type,init_pic,final_pic,status,create_time,update_time)
+		VALUES (#{type},#{initPic}, #{finalPic},#{status},#{createTime},#{updateTime})
+		ON DUPLICATE KEY UPDATE type = #{type}, init_pic=#{initPic}, final_pic=#{finalPic},status=#{status},update_time = now()
+	</insert>
+
+	<update id="updatePet" parameterType="com.enterprise.base.entity.PetEntity">
+		update pet
+		<set>
+			<if test="type != null and type != ''">
+				type = #{type},
+			</if>
+			<if test="initPic != null and initPic != ''">
+				init_pic = #{initPic},
+			</if>
+			<if test="finalPic != null and finalPic != ''">
+				final_pic = #{finalPic},
+			</if>
+			<if test="status != null and status != ''">
+				status = #{status},
+			</if>
+			<if test="updateTime != null">
+				update_time = now(),
+			</if>
+		</set>
+		WHERE id = #{id}
+	</update>
+
+
+	<select id="getPetList" resultMap="BaseResultMap">
+		SELECT * FROM pet WHERE status = 1 ORDER BY id desc
+	</select>
+
+
+</mapper>

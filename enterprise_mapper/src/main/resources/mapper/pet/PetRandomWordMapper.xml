@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.enterprise.mapper.pet.PetRandomWordMapper">
+	<resultMap id="BaseResultMap" type="com.enterprise.base.entity.PetRandomWordEntity">
+		<id column="id" jdbcType="INTEGER" property="id" />
+		<result column="word" jdbcType="INTEGER" property="word" />
+		<result column="status" jdbcType="INTEGER" property="status" />
+	</resultMap>
+
+	<sql id="baseColumnList" >
+		id,word,status
+	</sql>
+
+	<select id="getAllPetWords" resultType="java.lang.String">
+		SELECT GROUP_CONCAT(word SEPARATOR ';') FROM pet_random_word WHERE status = 1 GROUP BY status
+	</select>
+
+	<select id="getPetWords" resultType="java.lang.String">
+		SELECT word  FROM pet_random_word WHERE status = 1
+	</select>
+
+
+</mapper>

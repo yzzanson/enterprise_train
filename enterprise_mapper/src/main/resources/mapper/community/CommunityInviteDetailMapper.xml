@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.enterprise.mapper.community.CommunityInviteDetailMapper">
+	<resultMap id="BaseResultMap" type="com.enterprise.base.entity.CommunityInviteDetailEntity">
+		<id column="id" jdbcType="INTEGER" property="id" />
+		<result column="company_id" jdbcType="INTEGER" property="companyId" />
+		<result column="user_id" jdbcType="INTEGER" property="userId" />
+		<result column="user_name" jdbcType="VARCHAR" property="userName" />
+		<result column="phone_num" jdbcType="VARCHAR" property="phoneNum" />
+		<result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+	</resultMap>
+
+	<sql id="baseColumnList" >
+		id,company_id,user_id,user_name,phone_num,create_time
+	</sql>
+
+	<insert id="createCommunityInviteDetail" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO community_invite_detail (company_id,user_id,user_name,phone_num,create_time)
+		VALUES (#{companyId},#{userId},#{userName},#{phoneNum},#{createTime})
+	</insert>
+
+	<select id="getByCompanyId" resultMap="BaseResultMap">
+		SELECT *
+		FROM community_invite_detail
+		WHERE  company_id = #{companyId} LIMIT 0,1
+	</select>
+
+	<select id="getCommunityInviteByCompanyAndDay" resultMap="BaseResultMap">
+		SELECT *
+		FROM community_invite_detail
+		WHERE DATE_FORMAT(create_time,'%Y-%m-%d') = #{date}
+		ORDER BY create_time ASC
+	</select>
+
+
+</mapper>

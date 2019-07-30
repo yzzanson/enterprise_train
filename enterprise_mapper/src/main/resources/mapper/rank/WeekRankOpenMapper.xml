@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.enterprise.mapper.rank.WeekRankOpenMapper">
+    <resultMap id="BaseResultMap" type="com.enterprise.base.entity.WeekRankOpenEntity">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="company_id" jdbcType="INTEGER" property="companyId"/>
+        <result column="user_id" jdbcType="INTEGER" property="userId"/>
+        <result column="week_time" jdbcType="VARCHAR" property="weekTime"/>
+        <result column="create_time" jdbcType="VARCHAR" property="createTime"/>
+        <result column="update_time" jdbcType="VARCHAR" property="updateTime"/>
+    </resultMap>
+
+    <sql id="baseColumnList">
+		id,company_id,user_id,week_time,create_time,update_time
+	</sql>
+
+    <insert id="insertOne" parameterType="com.enterprise.base.entity.WeekRankOpenEntity">
+        INSERT INTO week_rank_open (company_id,user_id,week_time,create_time,update_time)
+        VALUES (#{companyId},#{userId},#{weekTime},#{createTime},#{updateTime})
+    </insert>
+
+    <update id="updateOne">
+        update week_rank_open
+        <set>
+            <if test="weekTime != null">
+                week_time = #{weekTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = now(),
+            </if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <select id="getWeekRankOpenByCompanyIdAndUserId" resultMap="BaseResultMap">
+      SELECT * FROM week_rank_open WHERE company_id = #{companyId} AND user_id = #{userId}
+    </select>
+
+
+
+</mapper>

@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.enterprise.mapper.questions.QuestionsLibraryMapper">
+    <resultMap id="BaseResultMap" type="com.enterprise.base.entity.QuestionsLibraryEntity">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <id column="company_id" jdbcType="INTEGER" property="companyId"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="use_count" jdbcType="INTEGER" property="useCount"/>
+        <result column="total_count" jdbcType="INTEGER" property="totalCount"/>
+        <result column="subject" jdbcType="INTEGER" property="subject"/>
+        <result column="operator" jdbcType="INTEGER" property="operator"/>
+        <result column="label" jdbcType="INTEGER" property="label"/>
+        <result column="parent_id" jdbcType="INTEGER" property="parentId"/>
+        <result column="default_flag" jdbcType="INTEGER" property="defaultFlag"/>
+        <result column="sort_type" jdbcType="INTEGER" property="sortType"/>
+        <result column="option_sort_type" jdbcType="INTEGER" property="optionSortType"/>
+        <result column="is_oa" jdbcType="INTEGER" property="isOA"/>
+        <result column="status" jdbcType="INTEGER" property="status"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+    </resultMap>
+
+
+    <sql id="baseColumnList">
+        id,company_id,name,use_count,use_count,subject,operator,label,parent_id,default_flag,sort_type,option_sort_type,is_oa,status,create_time,update_time
+    </sql>
+    <insert id="createOrUpdateQuestionLibrary" parameterType="com.enterprise.base.entity.QuestionsLibraryEntity"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO questions_library (company_id,name,use_count,total_count,subject,operator,label,parent_id,default_flag,sort_type,option_sort_type,is_oa,status,create_time,update_time)
+        VALUES (#{companyId},#{name}, #{useCount},#{totalCount},#{subject},#{operator},#{label},#{parentId},#{defaultFlag},#{sortType},#{optionSortType},#{isOA},#{status},#{createTime},#{updateTime})
+        ON DUPLICATE KEY UPDATE name = #{name}, label=#{label},status=#{status},update_time = now()
+    </insert>
+
+
+    <update id="updateQuestionLibrary" parameterType="com.enterprise.base.entity.QuestionsLibraryEntity">
+        update questions_library
+        <set>
+            <if test="companyId != null and companyId != ''">
+                company_id = #{companyId},
+            </if>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="totalCount != null and totalCount != ''">
+                total_count = #{totalCount},
+            </if>
+            <if test="sortType != null">
+                sort_type = #{sortType},
+            </if>
+            <if test="optionSortType != null">
+                option_sort_type = #{optionSortType},
+            </if>
+            <if test="subject != null and subject != ''">
+                subject = #{subject},
+            </if>
+            <if test="label != null and label != ''">
+                label = #{label},
+            </if>
+            <if test="parentId != null and parentId != ''">
+                parent_id = #{parentId},
+            </if>
+            <if test="status != null and status != ''">
+                status = #{status},
+            </if>
+            <if test="updateTime != null">
+                update_time = now(),
+            </if>
+            <if test="defaultFlag != null">
+                default_flag = #{defaultFlag},
+            </if>
+            <if test="isOA != null">
+                is_oa = #{isOA},
+            </if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+
+    <update id="useQuestionLibrary" parameterType="java.lang.Integer">
+        UPDATE questions_library SET use_count = use_count+1 WHERE id = #{id}
+    </update>
+
+    <insert id="copyQuestionLibrary" parameterType="com.enterprise.base.entity.QuestionsLibraryEntity"
+            useGeneratedKeys="true" keyProperty="id">
+        insert into questions_library(company_id, name, use_count, subject, operator, label, parent_id, status, create_time, update_time)
+        select #{companyId}, name, 0, 1, #{operator}, label, #{parentId} , status, create_time, update_time
+        from questions_library where id = #{parentId}
+    </insert>
+
+    <select id="findQuestionLibrary" resultMap="BaseResultMap">
+        SELECT *,null AS companyLibraryId FROM questions_library WHERE 1=1
+        <if test="label != null and label != ''">
+            AND
+            <foreach collection="labelList" item="item" open="(" index="index" separator="OR" close=")">
+                label LIKE CONCAT('%',#{item},'%')
+            </foreach>
+        </if>
+
+        <if test="name != null and name != ''">
+            AND name like '%${name}%'
+        </if>
+
+        <if test="subject != null and subject>=0">
+            AND subject = #{subject}
+        </if>
+
+        <if test="companyId != null and companyId>=0">
+            AND company_id = #{companyId}
+        </if>
+
+        <if test="defaultFlag != null">
+            AND default_flag = #{defaultFlag}
+        </if>
+        AND (status = 1 OR status = 2)
+        ORDER BY id DESC
+    </select>
+
+    <select id="findQuestionLibrary2" resultMap="BaseResultMap">
+        SELECT *,null AS companyLibraryId FROM questions_library WHERE 1=1
+        <if test="label != null and label != ''">
+            AND
+            <foreach collection="labelList" item="item" open="(" index="index" separator="OR" close=")">
+                label LIKE CONCAT('%',#{item},'%')
+            </foreach>
+        </if>
+
+        <if test="name != null and name != ''">
+            AND name like '%${name}%'
+        </if>
+
+        <if test="subject != null and subject>=0">
+            AND subject = #{subject}
+        </if>
+
+        <if test="companyId != null and companyId>=0">
+            AND company_id = #{companyId}
+        </if>
+
+        <if test="defaultFlag != null">
+            AND default_flag = #{defaultFlag}
+        </if>
+
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+        ORDER BY id DESC
+    </select>
+
+    <select id="findCompanyQuestionLibrary" resultMap="BaseResultMap">
+        SELECT A.* FROM (
+        SELECT *,null AS companyLibraryId FROM questions_library WHERE 1=1 AND subject = 1 AND status = 1
+        <if test="companyId != null and companyId>=0">
+            AND company_id = #{companyId}
+        </if>
+        UNION
+        SELECT ql.*,cx.id AS companyLibraryId FROM questions_library ql,company_x_library cx
+        WHERE ql.id = cx.library_id AND cx.status = 1 AND ql.status =1
+        <if test="companyId != null and companyId>=0">
+            AND cx.company_id = #{companyId}
+        </if>
+        ) A
+        WHERE 1=1
+        <if test="label != null and label != ''">
+            AND
+            <foreach collection="labelList" item="item" open="(" index="index" separator="OR" close=")">
+                A.label LIKE CONCAT('%',#{item},'%')
+            </foreach>
+        </if>
+
+        <if test="name != null and name != ''">
+            AND A.name like '%${name}%'
+        </if>
+        AND A.status = 1
+        ORDER BY id DESC
+    </select>
+
+    <select id="findById" resultMap="BaseResultMap">
+        SELECT * FROM questions_library WHERE id = #{id}
+    </select>
+
+    <update id="batchDelete" parameterType="java.util.List">
+        update questions_library set status=0
+        where id in
+        <foreach collection="ids" index="index" item="item"
+                 separator="," open="(" close=")">
+            #{item,jdbcType=BIGINT}
+        </foreach>
+    </update>
+
+    <select id="getLabelList" resultType="java.lang.String">
+        SELECT DISTINCT(label) FROM questions_library WHERE 1=1
+        <choose>
+            <when test="subject!=null and subject==0">
+                AND subject = #{subject}
+            </when>
+            <otherwise>
+                AND subject = #{subject} AND company_id = #{companyId}
+            </otherwise>
+        </choose>
+        AND (status = 1 OR status = 2)
+        AND label IS NOT NULL AND <![CDATA[ label <> '' ]]>
+        ORDER BY id DESC
+    </select>
+
+    <select id="getById" resultMap="BaseResultMap">
+        SELECT * FROM questions_library WHERE id = #{id}
+    </select>
+
+
+    <select id="getLibraryNameById" resultType="java.lang.String">
+        SELECT name FROM questions_library WHERE id = #{id}
+    </select>
+
+    <select id="getDefaultQuestionLibrary" resultMap="BaseResultMap">
+        SELECT * FROM questions_library WHERE default_flag = #{isDefault}
+        AND company_id = #{companyId} AND parent_id = #{parentId}
+    </select>
+
+    <select id="getDefaultQuestionLibraryNoAssigned" resultMap="BaseResultMap">
+        SELECT * FROM questions_library WHERE default_flag = 1 AND company_id = 2 AND status = 1
+        AND id NOT IN (SELECT library_id from company_x_library WHERE company_id = 0 AND status = 1)
+    </select>
+
+
+    <update id="updateUseCount">
+        UPDATE questions_library
+        <set>
+            <if test="useCount != null">
+                use_count = #{useCount},
+            </if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <update id="addUseCount">
+        UPDATE questions_library
+        <set>
+            <if test="useCount != null">
+                use_count = use_count+#{useCount},
+            </if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <select id="getQuesitonLibraryCount" resultType="java.lang.Integer">
+        SELECT COUNT(id) FROM questions_library WHERE company_id = #{companyId} AND subject = #{subject} AND status = 1
+    </select>
+
+</mapper>

@@ -1,0 +1,347 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.enterprise.mapper.users.UserXCompanyMapper">
+    <resultMap id="BaseResultMap" type="com.enterprise.base.entity.UserXCompany">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="corp_id" jdbcType="VARCHAR" property="corpId"/>
+        <result column="ding_user_id" jdbcType="VARCHAR" property="dingUserId"/>
+        <result column="user_id" jdbcType="INTEGER" property="userId"/>
+        <result column="is_admin" jdbcType="INTEGER" property="isAdmin"/>
+        <result column="is_boss" jdbcType="INTEGER" property="isBoss"/>
+        <result column="is_super_manage" jdbcType="INTEGER" property="isSuperManage"/>
+        <result column="status" jdbcType="INTEGER" property="status"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+    </resultMap>
+
+    <sql id="baseColumnList">
+		id,corp_id,ding_user_id,user_id,is_admin,is_boss,is_super_manage,status,create_time,update_time
+	</sql>
+
+    <insert id="createUserXCompany" parameterType="com.enterprise.base.entity.UserXCompany" useGeneratedKeys="true"
+            keyProperty="id">
+		INSERT INTO user_x_company (corp_id,ding_user_id,user_id,is_admin,status,create_time,update_time)
+		VALUES (#{corpId},#{dingUserId},#{userId},#{isAdmin},#{status},#{createTime},#{updateTime})
+	</insert>
+
+    <update id="updateUserXCompany" parameterType="com.enterprise.base.entity.UserXCompany">
+        update user_x_company
+        <set>
+            <if test="status!=null">
+                status = #{status},
+            </if>
+            <if test="dingUserId != null and dingUserId != ''">
+                ding_user_id = #{dingUserId},
+            </if>
+            <if test="updateTime != null">
+                update_time = now(),
+            </if>
+            <if test="isAdmin != null">
+                is_admin = #{isAdmin},
+            </if>
+            <if test="isBoss != null">
+                is_boss = #{isBoss},
+            </if>
+            <if test="isSuperManage != null">
+                is_super_manage = #{isSuperManage},
+            </if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+
+    <select id="findUserCompany" resultType="com.enterprise.base.vo.UserXCompanyVO">
+        SELECT distinct(isv.corp_id) AS corpId,ci.name AS companyName,isv.corp_agent_id AS agentId,
+        case ci.agent_status when 0 then '卸载'
+        when 1 then '正常' when 2 then '停用' else '停用' END AS appStatus,
+        DATE_FORMAT(isv.create_time,'%Y-%m-%d %H:%i:%s') AS installTime
+        FROM company_info ci,isv_tickets isv,user_x_company uc
+        WHERE ci.id = isv.company_id AND uc.corp_id = isv.corp_id
+        <if test="corpId != null and corpId != ''">
+            AND isv.corp_id like '%${corpId}%'
+        </if>
+        <if test="agentId != null and agentId != ''">
+            AND isv.corp_agent_id like '%${agentId}%'
+        </if>
+        <if test="companyName != null and companyName != ''">
+            AND ci.name like '%${companyName}%'
+        </if>
+        <if test="startTime != null">
+            AND isv.create_time <![CDATA[>=]]> #{startTime,jdbcType=TIMESTAMP}
+        </if>
+        <if test="endTime != null">
+            AND isv.create_time <![CDATA[<=]]> #{endTime,jdbcType=TIMESTAMP}
+        </if>
+        ORDER BY uc.id DESC
+    </select>
+
+    <select id="getByUserId" resultMap="BaseResultMap">
+		SELECT * FROM user_x_company WHERE user_id = #{userId}
+	</select>
+
+    <select id="getByDingUserId" resultMap="BaseResultMap">
+		SELECT * FROM user_x_company WHERE ding_user_id = #{dingUserId}
+	</select>
+
+    <select id="getByCompanyIdANdDingUserId" resultMap="BaseResultMap">
+		SELECT * FROM user_x_company WHERE corp_id =#{corpId} AND ding_user_id = #{dingUserId} LIMIT 0,1
+	</select>
+
+    <select id="getUserXCompany" parameterType="com.enterprise.base.entity.UserXCompany" resultMap="BaseResultMap">
+        SELECT
+        id,corp_id,ding_user_id,user_id,status,create_time,update_time
+        FROM user_x_company
+        <where>
+            <if test="id != null">
+                id = #{id}
+            </if>
+            <if test="corpId != null">
+                and corp_id = #{corpId}
+            </if>
+            <if test="dingUserId != null">
+                and ding_user_id = #{dingUserId}
+            </if>
+            <if test="userId != null">
+                and user_id = #{userId}
+            </if>
+            <if test="status != null and status != ''">
+                and status = #{status}
+            </if>
+        </where>
+         LIMIT 0,1
+    </select>
+
+    <select id="getNewUserByCompanyIdAndDate" resultType="java.lang.Integer">
+        SELECT COUNT(ux.id) FROM user_x_company ux,company_info comp,isv_tickets isv WHERE
+        ux.corp_id = isv.corp_id AND isv.company_id = comp.id AND ux.status =1
+        <if test="date != null">
+            AND DATE_FORMAT(ux.create_time,'%Y-%m-%d') = #{date}
+        </if>
+        <if test="companyId != null and companyId != ''">
+            AND comp.id = #{companyId}
+        </if>
+    </select>
+
+    <select id="getUserByCorpId" resultType="com.enterprise.base.vo.UserVO">
+		SELECT u.id AS id,ux.corp_id AS corpId,u.ding_id AS dingId,
+		u.name AS name,u.avatar AS avatar,u.status AS status,ux.ding_user_id AS dingUserId
+		FROM user_x_company ux,user u
+		WHERE ux.user_id = u.id AND ux.corp_id = #{corpId}
+        <if test="status != null">
+            and ux.status = #{status}
+        </if>
+	</select>
+
+
+    <update id="updateUserPosition">
+        update user_x_company
+        <set>
+            <if test="isAdmin != null and isAdmin != ''">
+                is_admin = #{isAdmin},
+            </if>
+            <if test="isBoss != null and isBoss != ''">
+                is_boss = #{isBoss},
+            </if>
+        </set>
+        WHERE corp_id = #{corpId} And user_id = #{userId}
+    </update>
+
+
+    <select id="getDingIdByCorpIdAndUserId" resultMap="BaseResultMap">
+        SELECT *
+        FROM user_x_company ux
+        WHERE ux.user_id = #{userId} AND ux.corp_id = #{corpId} LIMIT 0,1
+    </select>
+
+
+    <select id="getUserByName" resultType="com.enterprise.base.vo.UserVO2">
+        SELECT ux.user_id AS id,ux.ding_user_id AS dingId,u.name AS name,0 AS status FROM
+        user_x_company ux,user u
+        WHERE ux.user_id = u.id AND ux.corp_id = #{corpId} AND ux.status = 1
+        AND u.name LIKE CONCAT('%',#{search},'%')
+    </select>
+
+
+    <select id="getAdmin" resultMap="BaseResultMap">
+        SELECT * FROM
+        user_x_company
+        WHERE status = 1 AND (is_admin = 1 OR is_boss = 1 OR is_leader = 1)
+        ORDER BY id LIMIT 0,1
+    </select>
+
+
+    <select id="getOne" resultMap="BaseResultMap">
+        SELECT * FROM
+        user_x_company
+        ORDER BY id LIMIT 0,1
+    </select>
+
+
+    <select id="getSuperManageUserId" resultType="java.lang.Integer">
+        SELECT user_id FROM
+        user_x_company WHERE corp_id = #{corpId}
+        AND is_super_manage = 1 LIMIT 0,1
+    </select>
+
+
+    <select id="getRemainUserIdList" resultType="java.lang.Integer">
+        SELECT user_id FROM user_x_company WHERE corp_id = #{corpId} AND status = 1
+        <if test="weekUserAnswerList != null and weekUserAnswerList.size>0">
+            AND user_id NOT IN
+            <foreach collection="weekUserAnswerList" item="item" open="(" index="index" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="petUserList != null and petUserList.size>0">
+            AND user_id NOT IN
+            <foreach collection="petUserList" item="item" open="(" index="index" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="openUserList != null and openUserList.size>0">
+            AND user_id NOT IN
+            <foreach collection="openUserList" item="item" open="(" index="index" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        GROUP BY user_id
+    </select>
+
+    <select id="getRemainUserIdList3" resultType="java.lang.Integer">
+        SELECT user_id FROM user_x_company WHERE corp_id = #{corpId} AND status = 1
+        <if test="weekUserAnswerList != null and weekUserAnswerList.size>0">
+            AND user_id NOT IN
+            <foreach collection="weekUserAnswerList" item="item" open="(" index="index" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="petUserList != null and petUserList.size>0">
+            AND user_id NOT IN
+            <foreach collection="petUserList" item="item" open="(" index="index" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        GROUP BY user_id
+    </select>
+
+    <select id="getRemainUserIdList2" resultType="java.lang.Integer">
+        SELECT user_id FROM user_x_company WHERE corp_id = #{corpId} AND status = 1
+        <if test="petWeightUserList != null and petWeightUserList.size>0">
+            AND user_id NOT IN
+            <foreach collection="petWeightUserList" item="item" open="(" index="index" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        GROUP BY user_id
+    </select>
+
+
+    <select id="getUserByCorpIdAndUserId" resultType="com.enterprise.base.vo.UserVO2">
+        SELECT u.id,u.name AS name,ux.ding_user_id AS dingId FROM user_x_company ux,user u WHERE ux.user_id = u.id
+        AND ux.corp_id = #{corpId} AND ux.user_id = #{userId}
+    </select>
+
+    <select id="getCompanyTotalUserCount" resultType="java.lang.Integer">
+        SELECT COUNT(id) FROM user_x_company ux WHERE ux.corp_id = #{corpId} AND
+        ux.status = 1
+    </select>
+
+    <select id="getUserRaisePet" resultType="com.enterprise.base.vo.UserPetVO">
+        SELECT mp.id AS petId,ux.user_id AS userId,u.name AS name,u.ding_id AS dingId,mp.experience_value AS experienceValue
+        FROM user_x_company ux,my_pet mp,user u  WHERE ux.user_id = mp.user_id
+        AND ux.user_id = u.id AND ux.status = 1 AND corp_id = #{corpId}
+    </select>
+
+
+    <select id="getUserCompanyList" resultMap="BaseResultMap">
+        SELECT * FROM user_x_company WHERE status =1 AND user_id = #{userId}
+    </select>
+
+    <select id="getTotalUserCount" resultType="java.lang.Integer">
+        SELECT COUNT(id) FROM user_x_company WHERE status =1
+    </select>
+
+
+    <select id="getTotalActiveUserCount" resultType="java.lang.Integer">
+        SELECT COUNT(ux.id) FROM user_x_company ux,my_pet m
+        WHERE ux.user_id =m.user_id AND ux.status = 1
+        <if test="corpId != null and corpId != ''">
+            AND ux.corp_id = #{corpId}
+        </if>
+    </select>
+
+    <select id="getNewActiveUserByCompanyIdAndDate" resultType="java.lang.Integer">
+        SELECT COUNT(ux.id) FROM user_x_company ux,my_pet m
+        WHERE ux.user_id =m.user_id AND ux.status = 1
+        <if test="corpId != null and corpId != ''">
+            AND ux.corp_id = #{corpId}
+        </if>
+        <if test="date != null and date != ''">
+            AND DATE_FORMAT(m.create_time,'%Y-%m-%d') = #{date}
+        </if>
+    </select>
+
+    <update id="batchUpdateUserXCompany">
+        UPDATE user_x_company SET status = #{status} WHERE corp_id = #{corpId}
+    </update>
+
+    <update id="batchUpdateUserXCompany2">
+        UPDATE user_x_company
+        <trim prefix="set" suffixOverrides=",">
+            <trim prefix="user_id=case" suffix="end,">
+                <foreach collection="userXCompanyList" item="item" index="index">
+                    <if test="item.userId!=null">
+                        when id=#{item.id} then #{item.userId}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="status=case" suffix="end,">
+                <foreach collection="userXCompanyList" item="item" index="index">
+                    <if test="item.status!=null">
+                        when id=#{item.id} then #{item.status}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="is_admin=case" suffix="end,">
+                <foreach collection="userXCompanyList" item="item" index="index">
+                    <if test="item.isAdmin!=null">
+                        when id=#{item.id} then #{item.isAdmin}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="is_boss=case" suffix="end,">
+                <foreach collection="userXCompanyList" item="item" index="index">
+                    <if test="item.isBoss!=null">
+                        when id=#{item.id} then #{item.isBoss}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="is_boss=case" suffix="end,">
+                <foreach collection="userXCompanyList" item="item" index="index">
+                    <if test="item.isBoss!=null">
+                        when id=#{item.id} then #{item.isBoss}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="is_super_manage=case" suffix="end,">
+                <foreach collection="userXCompanyList" item="item" index="index">
+                    <if test="item.isSuperManage!=null">
+                        when id=#{item.id} then #{item.isSuperManage}
+                    </if>
+                </foreach>
+            </trim>
+        </trim>
+        where
+        <foreach collection="userXCompanyList" separator="or" item="item" index="index">
+            id=#{item.id}
+        </foreach>
+    </update>
+
+    <insert id="batchInsert" parameterType="java.util.List" >
+        insert into user_x_company (corp_id,ding_user_id,user_id,is_admin,is_boss,status,create_time,update_time)
+        <foreach collection="userXCompanyList" item="item" index="index" separator="union all">
+            SELECT #{item.corpId},#{item.dingUserId},#{item.userId},#{item.isAdmin},#{item.isBoss},#{item.status}, now(),now() FROM DUAL
+        </foreach>
+    </insert>
+
+</mapper>

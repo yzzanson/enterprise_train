@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.enterprise.mapper.rank.RankPraiseMapper">
+	<resultMap id="BaseResultMap" type="com.enterprise.base.entity.RankPraiseEntity">
+		<id column="id" jdbcType="INTEGER" property="id" />
+		<result column="company_id" jdbcType="INTEGER" property="companyId" />
+		<result column="user_id" jdbcType="INTEGER" property="userId" />
+		<result column="praise_user_id" jdbcType="INTEGER" property="praiseUserId" />
+		<result column="type" jdbcType="INTEGER" property="type" />
+		<result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+	</resultMap>
+
+	<sql id="baseColumnList" >
+		id,company_id,user_id,praise_user_id,type,create_time
+	</sql>
+
+
+	<insert id="createRankPraise" parameterType="com.enterprise.base.entity.RankPraiseEntity"
+			useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO rank_praise
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="companyId != null">
+				company_id,
+			</if>
+			<if test="userId != null">
+				user_id,
+			</if>
+			<if test="praiseUserId != null">
+				praise_user_id,
+			</if>
+			<if test="type != null">
+				type,
+			</if>
+			<if test="createTime != null">
+				create_time,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="companyId != null">
+				#{companyId,jdbcType=INTEGER},
+			</if>
+			<if test="userId != null">
+				#{userId,jdbcType=INTEGER},
+			</if>
+			<if test="praiseUserId != null">
+				#{praiseUserId,jdbcType=INTEGER},
+			</if>
+			<if test="type != null">
+				#{type,jdbcType=INTEGER},
+			</if>
+			<if test="createTime != null">
+				#{createTime,jdbcType=TIMESTAMP},
+			</if>
+		</trim>
+	</insert>
+
+
+	<update id="deleteExpireData">
+		DELETE FROM rank_praise WHERE  <![CDATA[ create_time < #{beginTime} ]]>
+	</update>
+
+	<select id="getByCompanyAndUser" resultMap="BaseResultMap">
+		SELECT * FROM rank_praise WHERE
+		company_id = #{companyId} AND  user_id = #{userId} AND praise_user_id = #{praiseUserId}
+	</select>
+
+
+</mapper>

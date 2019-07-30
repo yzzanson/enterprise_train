@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.enterprise.mapper.pet.PetDynamicMapper">
+    <resultMap id="BaseResultMap" type="com.enterprise.base.entity.PetDynamicEntity">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="company_id" jdbcType="INTEGER" property="companyId"/>
+        <result column="user_id" jdbcType="INTEGER" property="userId"/>
+        <result column="active_id" jdbcType="INTEGER" property="activeId"/>
+        <result column="dynamic_id" jdbcType="INTEGER" property="dynamicId"/>
+        <result column="dynamic_content" jdbcType="INTEGER" property="dynamicContent"/>
+        <result column="is_read" jdbcType="INTEGER" property="isRead"/>
+        <result column="status" jdbcType="INTEGER" property="status"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+    </resultMap>
+
+    <sql id="baseColumnList">
+		id,company_id,user_id,active_id,dynamic_id,dynamic_content,is_read,status,create_time
+	</sql>
+
+    <insert id="createPetDynamic" parameterType="com.enterprise.base.entity.PetDynamicEntity"
+            useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO pet_dynamic (company_id,user_id,active_id,dynamic_id,dynamic_content,is_read,status,create_time)
+		VALUES (#{companyId},#{userId}, #{activeId}, #{dynamicId},#{dynamicContent},#{isRead}, #{status},now())
+	</insert>
+
+    <select id="getPetDynamicList" resultMap="BaseResultMap">
+        SELECT * FROM pet_dynamic WHERE company_id = #{companyId} AND user_id = #{userId}
+        AND status =1 ORDER BY id DESC
+    </select>
+
+    <select id="getPetDynamic" resultMap="BaseResultMap">
+        SELECT * FROM pet_dynamic WHERE company_id = #{companyId} AND user_id = #{userId}
+         AND active_id = #{activeId} AND dynamic_id = #{dynamicId}
+        AND status =1 ORDER BY id DESC
+    </select>
+
+    <update id="updateMyDynamic">
+        update pet_dynamic
+        <set>
+            <if test="isRead != null and isRead != ''">
+                is_read = #{isRead},
+            </if>
+        </set>
+        WHERE company_id = #{companyId} AND user_id = #{userId} AND is_read = 0
+    </update>
+
+    <select id="getUnreadDynamic" resultType="java.lang.Integer">
+        SELECT count(id) FROM pet_dynamic WHERE company_id = #{companyId} AND user_id = #{userId}
+        AND status =1 AND is_read = 0
+    </select>
+
+
+</mapper>
