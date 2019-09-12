@@ -10,6 +10,7 @@ import com.enterprise.base.entity.IsvTicketsEntity;
 import com.enterprise.mapper.department.DepartmentMapper;
 import com.enterprise.mapper.isvTickets.IsvTicketsMapper;
 import com.enterprise.service.department.DepartmentService;
+import com.enterprise.service.department.DepartmentSimpleService;
 import com.enterprise.service.question.UserXLibraryService;
 import com.enterprise.util.dingtalk.DingHelper;
 import org.slf4j.Logger;
@@ -44,6 +45,9 @@ public class SyncController extends BaseController{
 
     @Resource
     private UserXLibraryService userXLibraryService;
+
+    @Resource
+    private DepartmentSimpleService departmentSimpleService;
 
     /**
      * 查看公司部门是否正确
@@ -108,14 +112,14 @@ public class SyncController extends BaseController{
         return userXLibraryService.updateFinishTime2();
     }
 
-
-
-    public static void main(String[] args) {
-       List<Integer> resultList = new ArrayList<>();
-        resultList.add(1);
-        resultList.add(2);
-        resultList.add(3);
-        System.out.println(resultList.toString());
+    /**
+     * 获取所有部门
+     */
+    @RequestMapping("/getAllDepartment.json")
+    @ResponseBody
+    public JSONObject getAllDepartment() {
+        return departmentSimpleService.getDepartments();
     }
+
 
 }

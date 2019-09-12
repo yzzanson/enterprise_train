@@ -77,7 +77,7 @@
         <task:scheduled ref="genPaperJob" method="vanish" cron="0 */10 9-21 * * ?"/>
         <task:scheduled ref="communityJob" method="informCommunity" cron="0 0 9 * * ?"/>
     </task:scheduled-tasks>
-    -->
+ -->
 
     <!--程序启动5s后调用refreshProductJob类中的refreshProduct方法，然后每隔1.5（1.5*60*60*1000）个小时再调用refreshProduct一次-->
         <!--程序启动5s后调用SuitesJob类中的work方法，然后每隔15（15*60*1000）分钟再调用work一次-->

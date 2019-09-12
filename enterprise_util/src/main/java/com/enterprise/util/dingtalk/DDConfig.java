@@ -22,6 +22,8 @@ public class DDConfig {
     // 授权企业的accesstoken
     public static final String GET_CORP_TOKEN = OAPI_HOST + "/service/get_corp_token?1=1";
 
+    public static final String GET_CORP_ACCESSTOKEN = OAPI_HOST + "/gettoken?1=1";
+
     // 获取授权企业的详细信息
     public static final String GET_AUTH_INFO = OAPI_HOST + "/service/get_auth_info?1=1";
 

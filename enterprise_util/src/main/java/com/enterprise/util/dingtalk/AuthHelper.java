@@ -108,6 +108,7 @@ public class AuthHelper {
         return object;
     }
 
+
     /**
      * 激活企业对应的套件
      *
@@ -147,6 +148,23 @@ public class AuthHelper {
         JSONObject object = HttpUtil.doPost(url, p);
 
 //        logger.info("企业的accesstoken 》 " + object.toJSONString() + ", 参数:" + p.toString());
+        return object.getString("access_token");
+    }
+
+    /**
+     * 获取企业的accesstoken
+     *
+     * @param appKey
+     * @param appSecrect
+     * @return
+     * @throws Exception
+     */
+    public static String getAccessToken(String appKey, String appSecrect) {
+        JSONObject p = new JSONObject();
+        String url = JSONUtil.appendJsonParamsToUrl(DDConfig.GET_CORP_ACCESSTOKEN, p);
+        p.put("appkey", appKey);
+        p.put("appsecret", appSecrect);
+        JSONObject object = HttpUtil.get(url, p);
         return object.getString("access_token");
     }
 

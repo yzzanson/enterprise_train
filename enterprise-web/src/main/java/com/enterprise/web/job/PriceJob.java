@@ -21,7 +21,7 @@ public class PriceJob {
 
     public void sendPriceMsg() throws ApiException {
 //        DingTalkClient client = new DefaultDingTalkClient("https://oapi.dingtalk.com/robot/send?access_token=566cc69da782ec33e42541b09b08551f09fbe864eb8008112e994b43887");
-        DingTalkClient client = new DefaultDingTalkClient("https://oapi.dingtalk.com/robot/send?access_token=3ce8be37c7362113cedab229ff95e09ad77d73940c91b7e7ee84317d932fff36");
+        DingTalkClient client = new DefaultDingTalkClient("https://oapi.dingtalk.com/robot/send?access_token=b3605b7708625a44f31aaa142c00f418a5cfe4fa27e6dae1186b663471786564");
         OapiRobotSendRequest request = new OapiRobotSendRequest();
         request.setMsgtype("markdown");
         OapiRobotSendRequest.Markdown markdown = new OapiRobotSendRequest.Markdown();

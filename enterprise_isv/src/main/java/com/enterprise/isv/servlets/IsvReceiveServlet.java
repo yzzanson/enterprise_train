@@ -502,7 +502,7 @@ public class IsvReceiveServlet extends HttpServlet {
     private String robortOATemplate = "%s的 %s 于 %s 在购买了 %s 套餐,共 %s 元。";
 
     private void sendRobortMessage(String companyName, String userName, String createTime, String template, BigDecimal price) throws ApiException {
-        DingTalkClient client = new DefaultDingTalkClient("https://oapi.dingtalk.com/robot/send?access_token=719caef90bf70f9fac277d266b039f33ac86d421a72c648ed159b0e1bd799bbd");
+        DingTalkClient client = new DefaultDingTalkClient("https://oapi.dingtalk.com/robot/send?access_token=de43e03cf0837f265357f163f21943766ce001c28029a500af6708b489fda4db");
         OapiRobotSendRequest request = new OapiRobotSendRequest();
         request.setMsgtype("text");
         OapiRobotSendRequest.Text text = new OapiRobotSendRequest.Text();
