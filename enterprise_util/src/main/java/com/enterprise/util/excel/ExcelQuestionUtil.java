@@ -247,11 +247,75 @@ public class ExcelQuestionUtil {
     }
 
 
+    public static List<LeQIngExcelDTO> importLeQing(File file) {
+        InputStream is = null;
+        try {
+            is = new FileInputStream(file);
+            List<LeQIngExcelDTO> resultList = new ArrayList<>();
+            XSSFWorkbook xssfWorkbook = new XSSFWorkbook(is);
+            XSSFSheet xssfsheet = xssfWorkbook.getSheetAt(0);
+            if (xssfsheet == null || xssfsheet.getLastRowNum() < 2) {
+                return null;
+            }
+            if (xssfsheet != null) {
+                //遍历行 rowNum=0开始
+                for (int rowNum = 2; rowNum <= xssfsheet.getLastRowNum(); rowNum++) {
+                    XSSFRow xssfRow = xssfsheet.getRow(rowNum);
+                    if (xssfRow == null) {
+                        continue;
+                    }
+                    if (xssfRow.getCell(0) != null && xssfRow.getCell(0).getCellType() == Cell.CELL_TYPE_STRING && xssfRow.getCell(0).equals("1（示例）")) {
+                        continue;
+                    }
+                    //遍历每行的每个cell
+                    LeQIngExcelDTO leQIngExcelDTO = new LeQIngExcelDTO();
+                    for (int cellNum = 0; cellNum < xssfRow.getLastCellNum(); cellNum++) {
+                        XSSFCell xssfCell = xssfRow.getCell(cellNum);
+                        if (xssfCell == null) {
+                            continue;
+                        }
+                        String cellValue = getValue(xssfCell);
+                        if (cellNum == 0) {
+                            leQIngExcelDTO.setId(cellValue);
+                        } else if (cellNum == 1) {
+                            leQIngExcelDTO.setPid(cellValue);
+                        } else if (cellNum == 2) {
+                            leQIngExcelDTO.setName(cellValue);
+                        }else if (cellNum == 3) {
+                            leQIngExcelDTO.setStatus(Integer.valueOf(cellValue));
+                        }else if (cellNum == 4) {
+                            leQIngExcelDTO.setDataIndex(Integer.valueOf(cellValue));
+                        }else if (cellNum == 5) {
+                            leQIngExcelDTO.setDataStatus(Integer.valueOf(cellValue));
+                        }else if (cellNum == 6) {
+                            leQIngExcelDTO.setDataStatus1(Integer.valueOf(cellValue));
+                        }
+
+                    }
+                    resultList.add(leQIngExcelDTO);
+                }
+                return resultList;
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
     public static void main(String[] args) {
-        String str = "100000000000000000000.00";
-//        String sss  = replaceChar(str, "\\(", "\\（");
-        String sss = str.substring(0, str.length() - 2);
-        System.out.println(str);
-        System.out.println(sss);
+//        String str = "100000000000000000000.00";
+//////        String sss  = replaceChar(str, "\\(", "\\（");
+////        String sss = str.substring(0, str.length() - 2);
+////        System.out.println(str);
+////        System.out.println(sss);
+        File file = new File("/Users/zezhouyang/Desktop/乐青市教育局/sys_org.xls");
+        List<LeQIngExcelDTO> resultList = importLeQing(file);
+        for (int i = 0; i < resultList.size(); i++) {
+            System.out.println(resultList.get(i));
+        }
+
     }
 }

@@ -188,13 +188,10 @@ public class IsvReceiveServlet extends HttpServlet {
                     //"suite_ticket"事件每二十分钟推送一次,数据格式如下: { "SuiteKey": "suitexxxxxx", "EventType": "suite_ticket ", "TimeStamp": 1234456, "SuiteTicket": "adsadsad" }
                     try {
                         logger.info("【消息推送管理 suite_ticket】进入事件每5个小时推送一次");
-
                         String suiteTicket = plainTextJson.getString("SuiteTicket");
                         String suiteSecret = suitEntiy.getSuiteSecret();
-
                         //获取到suiteTicket之后需要换取suiteToken，
                         logger.info("suiteTicket > " + suiteTicket + " suite_key>" + suitEntiy.getSuiteKey() + " SUITE_SECRET> " + suitEntiy.getSuiteSecret());
-
                         //应用套件access_token
                         JSONObject resultJson = AuthHelper.getSuiteAccessToken(suiteKey, suiteSecret, suiteTicket);
                         String suiteToken = resultJson.getString("suite_access_token");
@@ -213,14 +210,11 @@ public class IsvReceiveServlet extends HttpServlet {
                         res = "fail";
                         logger.error("每5个小时推送一次 suiteToken 获取失败:", e);
                     }
-
                     break;
                 case "tmp_auth_code":
                     //"tmp_auth_code"事件将企业对套件发起授权的时候推送,数据格式如下{"SuiteKey": "suitexxxxxx","EventType": " tmp_auth_code","TimeStamp": 1234456,"AuthCode": "adads"}
                     String authCode = plainTextJson.getString("AuthCode");
-                    //value.toString();
                     String suiteTokenPerm = suitEntiy.getSuiteAccessToken();
-
                     // 拿到tmp_auth_code（临时授权码）后，需要向钉钉服务器获取企业的corpId（企业id）和permanent_code（永久授权码）
                     p.clear();
                     p.put("suite_access_token", suiteTokenPerm);
@@ -233,10 +227,9 @@ public class IsvReceiveServlet extends HttpServlet {
                     //todo 保存将corpId（企业id）和permanent_code（永久授权码）做持久化存储
                     //{"auth_corp_info":{"corp_name":" 实名认证2","corpid":"dingdad68ec54087869f35c2f4657eb6378f"},"ch_permanent_code":"M_13SWAuUPT9MjgNwlH4NWdB4YZPipy8k1QvbHxZGuL7OBUst2NWmbPIBYRTFmR6"}
                     String corpId = object.getJSONObject("auth_corp_info").getString("corpid");
-                    //String channelPermanentCode = object.getString("ch_permanent_code");
                     String corpPermanentCode = object.getString("permanent_code");
                     String corpName = object.getJSONObject("auth_corp_info").getString("corp_name");
-
+                    //激活套件
                     AuthHelper.getActivateSuite(suiteTokenPerm, suitEntiy.getSuiteKey(), corpId);
                     Boolean isNewCompany = false;
                     IsvTicketsEntity isvTicketsEntity = ticketsService.getIsvTicketByCorpId(corpId);
@@ -253,17 +246,9 @@ public class IsvReceiveServlet extends HttpServlet {
 
                     }
 
-                    String authUserId = AuthHelper.getAuthInfo(suitEntiy.getSuiteTicket(), suitEntiy.getSuiteKey(), suitEntiy.getSuiteSecret(), corpId);
-
+                    object = AuthHelper.getAuthInfo(suitEntiy.getSuiteTicket(), suitEntiy.getSuiteKey(), suitEntiy.getSuiteSecret(), corpId);
+                    String authUserId = object.getJSONObject("auth_user_info").getString("userId");;
                     // todo 获取授权后企业中的agentid  为之后免登准备
-                    p.clear();
-                    p.put("suite_access_token", suiteTokenPerm);
-                    url = JSONUtil.appendJsonParamsToUrl(DDConfig.GET_AUTH_INFO, p);
-
-                    p.put("auth_corpid", corpId);
-                    p.put("suite_key", suitEntiy.getSuiteKey());
-                    object = HttpUtil.doPost(url, p);
-
                     logger.info("企业详细信息 > " + object.toJSONString());
 
                     // todo 暂时不需要
@@ -281,8 +266,6 @@ public class IsvReceiveServlet extends HttpServlet {
                                 break;
                             }
                         }
-
-                    String authedUserId = (String) JSONObject.parseObject(object.get("auth_user_info").toString()).get("userId");
 
                     if (isvTicketsEntity == null) {
                         isNewCompany = true;
@@ -344,8 +327,6 @@ public class IsvReceiveServlet extends HttpServlet {
                     }
                     //人员同步要堵塞,不然后面获取员工信息会出事
                     new SynchronizeOrganization(corpId, isvTicketsEntity).run();
-                    //将默认的题库导入给用户
-                    //new Thread(new SynchronizeLibrary(corpId)).start();
                     //同步公共题库!!
                     if (isNewCompany) {
                         Thread.sleep(10000);
@@ -373,7 +354,6 @@ public class IsvReceiveServlet extends HttpServlet {
                     ticketsService.modifyIsvTickets(isvTicketsEntity);
                     //将默认的题库导入给用户
                     //new SynchronizeLibrary(corpId).run();
-
 
                     /**
                      * 由于以下操作需要从持久化存储中获得数据，而本demo并没有做持久化存储（因为部署环境千差万别），所以没有具体代码，只有操作指导。
@@ -452,7 +432,7 @@ public class IsvReceiveServlet extends HttpServlet {
                                 isvTicketBuy.setIsBuy(StatusEnum.OK.getValue());
                                 ticketsService.modifyIsvTickets(isvTicketBuy);
                                 String companyName = companyInfoService.getCompanyNameById(isvTicketBuy.getCompanyId());
-                                String authedId = AuthHelper.getAuthInfo(suitEntiy.getSuiteTicket(), suitEntiy.getSuiteKey(), suitEntiy.getSuiteSecret(), buyCorpId);
+                                String authedId = AuthHelper.getAuthUserInfo(suitEntiy.getSuiteTicket(), suitEntiy.getSuiteKey(), suitEntiy.getSuiteSecret(), buyCorpId);
                                 String dateTime = DateUtil.getDisplayYMDHMS(new Date());
                                 if (!StringUtils.isEmpty(authedId)) {
                                     CorpUserDetail corpUserDetail = DingHelper.getMemberDetail(buyCorpId, authedId);
@@ -512,6 +492,7 @@ public class IsvReceiveServlet extends HttpServlet {
         request.setText(text);
         logger.info(request.toString());
         OapiRobotSendResponse response = client.execute(request);
+        logger.info(response.toString());
     }
 
     public static BigDecimal changeF2Y(BigDecimal price) {

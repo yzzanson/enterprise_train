@@ -62,7 +62,7 @@ public class DingCallServiceImpl implements DingCallService {
             Integer companyId = companyInfoList.get(i).getId();
             IsvTicketsEntity isvTicketEntity = isvTicketsMapper.getIsvTicketByCompanyId(companyId);
             String corpId = isvTicketEntity.getCorpId();
-            String authUserInfo = AuthHelper.getAuthInfo(suiteTicket, suiteKey, suiteSecrect, corpId);
+            String authUserInfo = AuthHelper.getAuthUserInfo(suiteTicket, suiteKey, suiteSecrect, corpId);
             if(StringUtils.isNotEmpty(authUserInfo)){
                 logger.info("isvid:"+isvTicketEntity.getId()+"corp:"+corpId+",authUserInfo"+authUserInfo);
                 isvTicketEntity.setAuthUserId(authUserInfo);
@@ -86,7 +86,7 @@ public class DingCallServiceImpl implements DingCallService {
         String suiteSecrect = suitesEntity.getSuiteSecret();
         IsvTicketsEntity isvTicketEntity = isvTicketsMapper.getIsvTicketByCompanyId(companyId);
         String corpId = isvTicketEntity.getCorpId();
-        String authUserInfo = AuthHelper.getAuthInfo(suiteTicket, suiteKey, suiteSecrect, corpId);
+        String authUserInfo = AuthHelper.getAuthUserInfo(suiteTicket, suiteKey, suiteSecrect, corpId);
         if(StringUtils.isNotEmpty(authUserInfo)){
             logger.info("isvid:"+isvTicketEntity.getId()+"corp:"+corpId+",authUserInfo"+authUserInfo);
             isvTicketEntity.setAuthUserId(authUserInfo);
@@ -150,7 +150,7 @@ public class DingCallServiceImpl implements DingCallService {
         IsvTicketsEntity isvTicketEntity = isvTicketsMapper.getIsvTicketByCorpId(corpId);//auth_user_id
         String staffId = isvTicketEntity.getAuthUserId();
         if (StringUtils.isEmpty(staffId)) {
-            staffId = AuthHelper.getAuthInfo(suitesEntity.getSuiteTicket(), suitesEntity.getSuiteKey(), suitesEntity.getSuiteSecret(), corpId);
+            staffId = AuthHelper.getAuthUserInfo(suitesEntity.getSuiteTicket(), suitesEntity.getSuiteKey(), suitesEntity.getSuiteSecret(), corpId);
             if (StringUtils.isEmpty(staffId)) {
                 return ResultJson.errorResultJson("不存在的管理员id");
             }

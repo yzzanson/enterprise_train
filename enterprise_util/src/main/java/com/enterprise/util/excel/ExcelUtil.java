@@ -531,7 +531,7 @@ public class ExcelUtil<T> {
     }
 
 
-    public static void downloadExcelMulti(String title,String[] sheetNameArr, String[] tableTitleArr, String[] headTablesColumnsNameArr, String[] tablesColumnNameArr,Map<String,List> mixResultMap,HttpServletResponse response) {
+    public static void downloadExcelMulti(String title, String[] sheetNameArr, String[] tableTitleArr, String[] headTablesColumnsNameArr, String[] tablesColumnNameArr, Map<String, List> mixResultMap, HttpServletResponse response) {
         try {
             ByteArrayOutputStream os = new ByteArrayOutputStream();
             MultiExcelUtil.exportMultiExcel(sheetNameArr, tableTitleArr, headTablesColumnsNameArr, tablesColumnNameArr, mixResultMap, os);
@@ -559,7 +559,6 @@ public class ExcelUtil<T> {
             e.printStackTrace();
         }
     }
-
 
 
     /**
@@ -669,7 +668,7 @@ public class ExcelUtil<T> {
                 newCell.setCellValue(cellValue);
 
                 String[] questionType = {QuestionTypeEnum.SINGLE_CHOICE.getChineseDesc(), QuestionTypeEnum.MULTI_CHOICE.getChineseDesc(), QuestionTypeEnum.TRUE_FALSE.getChineseDesc(), QuestionTypeEnum.COMPLETION.getChineseDesc()};
-                creatDropDownList(sheet, helper, questionType, 1, list.size()+10, 0, 0);
+                creatDropDownList(sheet, helper, questionType, 1, list.size() + 10, 0, 0);
             }
             rowIndex++;
         }
@@ -717,7 +716,7 @@ public class ExcelUtil<T> {
 
     public static void main(String[] args) {
 
-        String filePath = "/Users/zezhouyang/Desktop/sqlresult_281865411.xlsx";
+//        String filePath = "/Users/zezhouyang/Desktop/sqlresult_281865411.xlsx";
 //        try {
 //            List<QuestionExcelDTO> resultList = new ExcelUtil(QuestionExcelDTO.class).importExcel("商业小知识", 0, filePath);
 //            List<QuestionExcelDTO2> resultList = new ExcelUtil(QuestionExcelDTO2.class).importExcel("", 1, filePath);
@@ -732,22 +731,27 @@ public class ExcelUtil<T> {
 //        String filePath = "/Users/zezhouyang/Desktop/sqlresult_28193391111.xlsx";
 
 
-        /*
-        String filePath = "/Users/zezhouyang/Desktop/petword.xlsx";
+        String filePath = "/Users/zezhouyang/Desktop/乐青市教育局/sys_org.xls";
         try {
             File file = new File(filePath);
             InputStream input = new FileInputStream(file);
 //            List<QuestionExcelDTO> resultList = new ExcelUtil(QuestionExcelDTO.class).importExcel("商业小知识", 0, filePath);
 //            List<Integer> resultList = new ExcelUtil(Integer.class).importXSSF(file);
-            List<String> resultList = new ExcelUtil(String.class).importXSSFS(file);
+            List<LeQIngExcelDTO> resultList = new ExcelUtil(LeQIngExcelDTO.class).importExcel("", 0, input, 1);
+//            List<QuestionExcelDTO> resultList = new ExcelUtil(LeQIngExcelDTO.class).importExcel("", 0, filePath);
             String str = "";
-            String sourceStr =  "";
+            String sourceStr = "";
             for (int i = 0; i < resultList.size(); i++) {
-
+                LeQIngExcelDTO leQIngExcelDTO = resultList.get(i);
                 StringBuffer sbf = new StringBuffer();
-                sbf.append("insert into pet_random_word(word , status) values(");
-                sbf.append("'").append(resultList.get(i).toString()).append("'").append(",");
-                sbf.append("1").append("");
+                sbf.append("insert into lq_department(id , parent_id,name,status,data_index,data_status,data_status1) values(");
+                sbf.append("'").append(leQIngExcelDTO.getId()).append("'").append(",");
+                sbf.append("'").append(leQIngExcelDTO.getPid()).append("'").append(",");
+                sbf.append("'").append(leQIngExcelDTO.getName()).append("'").append(",");
+                sbf.append(leQIngExcelDTO.getStatus()).append(",");
+                sbf.append(leQIngExcelDTO.getDataIndex()).append(",");
+                sbf.append(leQIngExcelDTO.getDataStatus()).append(",");
+                sbf.append(leQIngExcelDTO.getDataStatus1());
                 sbf.append(");");
 
                 System.out.println(sbf.toString());
@@ -757,7 +761,6 @@ public class ExcelUtil<T> {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-          */
     }
 
 

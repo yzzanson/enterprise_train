@@ -209,7 +209,7 @@ public class AuthHelper {
         return object;
     }
 
-    public static String getAuthInfo(String suiteTicket, String suiteKey,String suiteSecrect,String corpId) {
+    public static String getAuthUserInfo(String suiteTicket, String suiteKey,String suiteSecrect,String corpId) {
         try {
             JSONObject p = new JSONObject();
             Date date = new Date();
@@ -229,6 +229,29 @@ public class AuthHelper {
 //            System.out.println(dingUserId);
                 return dingUserId;
             }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
+    public static JSONObject getAuthInfo(String suiteTicket, String suiteKey,String suiteSecrect,String corpId) {
+        try {
+            JSONObject p = new JSONObject();
+            Date date = new Date();
+            String suiteSignature = getSuiteSign(suiteTicket, suiteSecrect, date);
+            p.put("signature", suiteSignature);
+            p.put("timestamp", String.valueOf(date.getTime()));
+            p.put("suiteTicket", suiteTicket);
+            p.put("accessKey", suiteKey);
+            String url = JSONUtil.appendJsonParamsToUrl(DDConfig.GET_AUTH_INFO, p);
+
+            p.clear();
+            p.put("auth_corpid", corpId);
+            JSONObject object = HttpUtil.doPost(url, p);
+            logger.info("企业授权信息结果 > " + object.toJSONString());
+            return object;
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -307,7 +330,7 @@ public class AuthHelper {
         //接听人
         String raiseUserId = "202554274226362672";
 
-        String jsonResult = getAuthInfo(suiteTicket, suiteKey, suiteSecrect, corpId);
+        String jsonResult = getAuthUserInfo(suiteTicket, suiteKey, suiteSecrect, corpId);
         System.out.println(jsonResult);
 
 //        System.out.println("0::"+jsonResult.toJSONString());
