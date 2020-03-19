@@ -672,8 +672,7 @@ public class UserServiceImpl implements UserService {
         String mainPage = String.format(mainPageBury, isvTicketsEntity.getCorpId());
         String mainPageQrcode = String.format(QRCODE_PAGE, URLEncoder.encode(mainPage));
         UserXCompany userXCompany = userXCompanyMapper.getDingIdByCorpIdAndUserId(isvTicketsEntity.getCorpId(), userId);
-//                OAMessageUtil.sendOAMessageWithStroage(mobileLoginUser.getCompanyID(), userXCompany.getDingUserId(), "", oaMessage.getSimpleOAMessage(mainPage, mainPageQrcode, praiseTitle));
-        OAMessageUtil.sendOAMessageWithStroage(companyId, userXCompany.getDingUserId(), "", oaMessage.getSimpleOAMessage(mainPage, mainPageQrcode, praiseTitle));
+        OAMessageUtil.sendOAMessageWithStroageV2(companyId, userXCompany.getDingUserId(), "", oaMessage.getSimpleOAMessage(mainPage, mainPageQrcode, praiseTitle));
         saveRaisePetBury(companyId, mUserId, AppInviteEnum.INVITE.getValue(), new Date());
         saveOASendBury(companyId, mUserId, OABuryEnum.INVITE.getValue(), new Date());
         return ResultJson.succResultJson(userId);

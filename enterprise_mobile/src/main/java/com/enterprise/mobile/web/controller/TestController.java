@@ -17,6 +17,7 @@ import com.enterprise.service.petFood.PetFoodService;
 import com.enterprise.service.question.UserXQuestionsService;
 import com.enterprise.service.question.WeekRankService;
 import com.enterprise.service.redis.RedisService;
+import com.enterprise.service.sysorg.SysOrgService;
 import com.enterprise.service.user.UserService;
 import com.enterprise.service.user.UserXTitleService;
 import com.enterprise.thread.ModifyUserLibraryThread;
@@ -71,6 +72,9 @@ public class TestController extends BaseController {
     @Resource
     private MarketBuyService marketBuyService;
 
+    @Resource
+    private SysOrgService sysOrgService;
+
     @RequestMapping("/getJson")
     @ResponseBody
     public JSONObject getJson(Integer id) {
@@ -92,19 +96,6 @@ public class TestController extends BaseController {
         return ResultJson.succResultJson(result);
     }
 
-
-    @RequestMapping("/sendOA")
-    @ResponseBody
-    public JSONObject sendOA(String dingid, String content) {
-        MobileLoginUser mobileLoginUser = MobileLoginUser.getUser();
-        Map<String, Object> oa_map = new LinkedHashMap<>();
-//        String str = "我很开心";
-//        oa_map.put("", "刘松用20秒打败了企划部");
-//        oa_map.put("时间:", DateUtil.dateToStr(new Date()));
-        OAMessage oaMessage = new OAMessage();
-        OAMessageUtil.sendOAMessageWithStroage(mobileLoginUser.getCompanyID(), dingid, content, oaMessage.getOAMessageWithPic(null, null, content, "http://img0.imgtn.bdimg.com/it/u=4018582416,2390579626&fm=27&gp=0.jpg"));
-        return ResultJson.succResultJson(oa_map);
-    }
 
     @RequestMapping("/synchronizeLib")
     @ResponseBody
@@ -305,5 +296,19 @@ public class TestController extends BaseController {
         return ResultJson.succResultJson("success");
     }
 
+
+//    @RequestMapping("/getAllSysOrg")
+//    @ResponseBody
+//    public JSONObject getAllSysOrg() {
+//        sysOrgService.getAllSysOrg();
+//        return ResultJson.succResultJson("success");
+//    }
+
+    @RequestMapping("/getDepartmentList")
+    @ResponseBody
+    public JSONObject getDepartmentList() {
+        sysOrgService.getDepartmentList();
+        return ResultJson.succResultJson("success");
+    }
 
 }

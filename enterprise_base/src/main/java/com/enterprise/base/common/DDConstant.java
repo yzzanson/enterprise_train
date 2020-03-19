@@ -32,6 +32,8 @@ public class DDConstant {
     //发送OA消息
     public static final String SEND_OA_URL = OAPI_HOST+"/message/send?access_token=";
 
+    public static final String SEND_OA_ASYNC_URL = OAPI_HOST+"/topapi/message/corpconversation/asyncsend_v2?access_token=";
+
     public static final String SEND_ALL_OA_URL = OAPI_HOST+"/message/corpconversation/asyncsend_v2?access_token=";
 
     public static final String SEND_ALL_OA_URL2 = OAPI_HOST+"/message/send_to_conversation?access_token=";

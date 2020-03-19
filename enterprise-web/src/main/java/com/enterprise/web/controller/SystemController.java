@@ -30,9 +30,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.annotation.Resource;
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * @Description
@@ -125,8 +123,7 @@ public class SystemController {
             IsvTicketsEntity isvTicketsEntity = isvTicketService.getIsvTicketByCompanyId(companyId);
             String manageDingIds = getManageDingids(isvTicketsEntity.getCorpId());
             String pkpage = String.format(NEWVERSION_PAGE, isvTicketsEntity.getCorpId());
-//            OAMessageUtil.sendOAMessageWithStroage(companyId, manageDingIds, "", new OAMessage().getOAMessageWithPic(pkpage, pkpage, OAMessageUtil.getMessageContent(""), NEWVERSION_PIC));
-            OAMessageUtil.sendOAMessageWithStroage(companyId, manageDingIds, "", new OAMessage().getOAMessageWithPic(pkpage, pkpage, OAMessageUtil.getSimpleMessageContent(""), NEWVERSION_PIC));
+            OAMessageUtil.sendOAMessageWithStroageV2(companyId, manageDingIds, "", new OAMessage().getOAMessageWithPic(pkpage, pkpage, OAMessageUtil.getSimpleMessageContent(""), NEWVERSION_PIC));
         }
         return ResultJson.succResultJson(corpids.toString());
     }
@@ -465,6 +462,25 @@ public class SystemController {
             e.printStackTrace();
         }
         return ResultJson.succResultJson(id);
+    }
+
+
+    @RequestMapping("/sendOA")
+    @ResponseBody
+    public JSONObject sendOA(Integer companyId,String dingid, String content) {
+        Map<String, Object> oa_map = new LinkedHashMap<>();
+        OAMessage oaMessage = new OAMessage();
+        OAMessageUtil.sendOAMessageWithStroage(companyId, dingid, content, oaMessage.getOAMessageWithPic(null, null, content, "http://img0.imgtn.bdimg.com/it/u=4018582416,2390579626&fm=27&gp=0.jpg"));
+        return ResultJson.succResultJson(oa_map);
+    }
+
+    @RequestMapping("/sendOAv2")
+    @ResponseBody
+    public JSONObject sendOAv2(Integer companyId,String dingid, String content) {
+        Map<String, Object> oa_map = new LinkedHashMap<>();
+        OAMessage oaMessage = new OAMessage();
+        OAMessageUtil.sendOAMessageWithStroageV2(companyId, dingid, content, oaMessage.getOAMessageWithPic(null, null, content, "http://img0.imgtn.bdimg.com/it/u=4018582416,2390579626&fm=27&gp=0.jpg"));
+        return ResultJson.succResultJson(oa_map);
     }
 
 

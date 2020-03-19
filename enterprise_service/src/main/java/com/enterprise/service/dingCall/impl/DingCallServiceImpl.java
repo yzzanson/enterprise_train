@@ -110,7 +110,6 @@ public class DingCallServiceImpl implements DingCallService {
             try {
                 Integer isCall = AuthHelper.checkCall(isvTicketEntity.getCorpAccessToken());
                 isvTicketEntity.setIsCall(isCall);
-                logger.info("companyId:"+companyId+",isCall"+isCall);
                 isvTicketsMapper.modifyIsvTickets(isvTicketEntity);
                 if (isCall.equals(0)) {
                     failCorpBuf.append(",").append(isvTicketEntity.getCorpId());

@@ -228,7 +228,7 @@ public class CommunityServiceImpl implements CommunityService {
         //corpId companyId userId
         String mainPage = String.format(mainPageBury, corpId ,userId,companyId, companyName);
         String mainPageQrcode = String.format(QRCODE_PAGE, URLEncoder.encode(mainPage));
-        OAMessageUtil.sendOAMessageWithStroage(companyId, userXCompany.getDingUserId(), "", oaMessage.getSimpleOAMessage(mainPage, mainPageQrcode, content));
+        OAMessageUtil.sendOAMessageWithStroageV2(companyId, userXCompany.getDingUserId(), "", oaMessage.getSimpleOAMessage(mainPage, mainPageQrcode, content));
         //发送OA消息记录
 //        saveOASendBury(companyId, userId, OABuryEnum.TOOL.getValue(), new Date());
 //        }

@@ -28,29 +28,6 @@ public class OAMessageUtil {
     private static Logger logger = LoggerFactory.getLogger(OAMessageUtil.class);
 
 
-    /**
-     * 发送简单文本消息到部门并入库
-     *
-     * @param companyId 公司Id
-     * @param content  消息内容
-     * @author shisan
-     * @date 2018/3/9 下午3:15
-     */
-    public static void sendTextMessageWithStorage(Integer companyId, String dingUserId,String content) {
-        sendMsg(companyId,dingUserId,content,new TextMessage(content), MsgTypeEnum.TEXT.getValue(), true);
-    }
-
-    /**
-     * 发送oa消息到人
-     *
-     * @param companyId 公司Id
-     * @param oaMsg    oa消息体内容
-     * @author shisan
-     * @date 2018/3/9 下午3:15
-     */
-    public static void sendOAMessageWithStroageToALL(Integer companyId, String content,OAMessageAll oaMsg) {
-        sendMsgToAll(companyId, content, oaMsg, true);
-    }
 
 
     /**
@@ -82,16 +59,14 @@ public class OAMessageUtil {
         sendMsg(companyId, dingUserId, content, oaMessageActionCard, MsgTypeEnum.ACTIONCARD.getValue(), true);
     }
 
-    /**
-     * 发送link消息到人
-     *
-     * @param companyId 公司Id
-     * @param oaMsg    oa消息体内容
-     * @author shisan
-     * @date 2018/3/9 下午3:15
-     */
-    public static void sendLinkMessageWithStroage(Integer companyId, String dingUserId,LinkOAMessage oaMsg) {
-        sendMsg(companyId, dingUserId,"",oaMsg, MsgTypeEnum.LINK.getValue(), true);
+    public static void sendOAMessageWithStroageV2(Integer companyId, String dingUserId,String content,OAMessage oaMsg) {
+        sendMsgV2(companyId, dingUserId, content, oaMsg, MsgTypeEnum.OA.getValue(), true);
+    }
+
+
+
+    public static void sendLinkMessageWithStroageV2(Integer companyId, String dingUserId,LinkOAMessage oaMsg) {
+        sendMsgV2(companyId, dingUserId,"",oaMsg, MsgTypeEnum.LINK.getValue(), true);
     }
 
     /**
@@ -116,12 +91,11 @@ public class OAMessageUtil {
      * @author shisan
      * @date 2018/3/9 下午4:31
      */
-    private static JSONObject   sendMsg(Integer companyId, String dingUserId,String messageContent ,Object content, String msgType, boolean storageFlag) {
+    private static JSONObject sendMsg(Integer companyId, String dingUserId,String messageContent ,Object content, String msgType, boolean storageFlag) {
         JSONObject resultJson = new JSONObject();
         String failMsg;
         if (companyId == null || content == null) {
             failMsg = "[发送消息到部门] 发送失败,原因:companyId = " + companyId + ", content = " + content;
-            logger.error(failMsg);
             resultJson.put("errcode", -1);
             resultJson.put("errmsg", failMsg);
             //发送消息失败时给开发部门发oa消息
@@ -148,6 +122,41 @@ public class OAMessageUtil {
         JSONObject messageJson = buildSingleMessage(ticketVO, dingUserId,content, msgType);
         //发送消息
         new Thread(new SendMsgThread(messageJson, "",companyId, ticketVO.getAccessToken(), resultJson, storageFlag)).start();
+        return resultJson;
+    }
+
+
+    private static JSONObject sendMsgV2(Integer companyId, String dingUserId,String messageContent ,Object content, String msgType, boolean storageFlag) {
+        JSONObject resultJson = new JSONObject();
+        String failMsg;
+        if (companyId == null || content == null) {
+            failMsg = "[发送消息到部门] 发送失败,原因:companyId = " + companyId + ", content = " + content;
+            resultJson.put("errcode", -1);
+            resultJson.put("errmsg", failMsg);
+            //发送消息失败时给开发部门发oa消息
+            sendTextMsgToDept(failMsg);
+            return resultJson;
+        }
+        //查询配置信息
+        IsvTicketsService ticketService = SpringContextHolder.getBean(IsvTicketsService.class);
+        TicketVO ticketVO = ticketService.getIsvTicketVOByCompanyId(companyId);
+
+        if (ticketVO == null || companyId==null) {
+            failMsg = "[发送消息到部门] 发送失败,原因:未获得公司id";
+            logger.error(failMsg);
+
+            resultJson.put("errcode", -1);
+            resultJson.put("errmsg", failMsg);
+
+            //发送消息失败时给开发部门发oa消息
+            sendTextMsgToDept(failMsg);
+            return resultJson;
+        }
+
+        //构建Message消息体
+        JSONObject messageJson = buildSingleMessage(ticketVO, dingUserId,content, msgType);
+        //发送消息
+        new Thread(new SendMsgThreadV2(messageJson, "",companyId, ticketVO.getAccessToken(), resultJson, storageFlag)).start();
         return resultJson;
     }
 
@@ -191,7 +200,7 @@ public class OAMessageUtil {
         //构建Message消息体
         JSONObject messageJson = buildSingleMessage(ticketVO, dingUserId,content, msgType);
         //发送消息
-        new Thread(new SendMsgThread(messageJson, "",companyId, ticketVO.getAccessToken(), resultJson, storageFlag)).start();
+        new Thread(new SendMsgThreadV2(messageJson, "",companyId, ticketVO.getAccessToken(), resultJson, storageFlag)).start();
         return resultJson;
     }
 
@@ -283,54 +292,10 @@ public class OAMessageUtil {
         //构建Message消息体
         JSONObject messageJson = buildMessage(ticketVO, departmentIds, dingUserId, content, msgType);
         //发送消息
-        new Thread(new SendMsgThread(messageJson, strcontent,companyId, ticketVO.getAccessToken(), resultJson, storageFlag)).start();
+        new Thread(new SendMsgThreadV2(messageJson, strcontent,companyId, ticketVO.getAccessToken(), resultJson, storageFlag)).start();
         return resultJson;
     }
 
-    /**
-     * 发送消息
-     *
-     * @param content     消息内容
-     * @param msgType
-     * @param storageFlag 是否入库
-     * @author shisan
-     * @date 2018/3/9 下午4:31
-     */
-    public static JSONObject sendMsgLibraryLearn(Integer companyId,String departmentIds, String dingUserIds,Integer libraryId,Object content, String msgType, boolean storageFlag) {
-        JSONObject resultJson = new JSONObject();
-        String failMsg;
-        if (companyId == null || content == null) {
-            failMsg = "[发送消息到部门] 发送失败,原因:companyId = " + companyId + ", content = " + content;
-            logger.error(failMsg);
-            resultJson.put("errcode", -1);
-            resultJson.put("errmsg", failMsg);
-            //发送消息失败时给开发部门发oa消息
-            sendTextMsgToDept(failMsg);
-            return resultJson;
-        }
-        //查询配置信息
-        IsvTicketsService ticketService = SpringContextHolder.getBean(IsvTicketsService.class);
-        TicketVO ticketVO = ticketService.getIsvTicketVOByCompanyId(companyId);
-
-        if (ticketVO == null || companyId==null) {
-            failMsg = "[发送消息到部门] 发送失败,原因:未获得公司id";
-            logger.error(failMsg);
-
-            resultJson.put("errcode", -1);
-            resultJson.put("errmsg", failMsg);
-
-            //发送消息失败时给开发部门发oa消息
-            sendTextMsgToDept(failMsg);
-            return resultJson;
-        }
-
-
-        //构建Message消息体
-        JSONObject messageJson = buildMessage(ticketVO, departmentIds, dingUserIds, content, msgType);
-        //发送消息
-        new Thread(new SendMsgLibraryLearnThread(messageJson, companyId, libraryId,ticketVO.getAccessToken(), resultJson, storageFlag)).start();
-        return resultJson;
-    }
 
     /**
      * 向指定部门发送简单文本消息
@@ -358,7 +323,7 @@ public class OAMessageUtil {
         //构建textMessage消息体
         JSONObject messageJson = buildMessage(ticketVO, DepartEnum.ACTIVEDEPT.getDeptId(), new TextMessage(content), MsgTypeEnum.TEXT.getValue());
         //发送消息
-        new Thread(new SendMsgThread(messageJson, content,DepartEnum.ACTIVEDEPT.getCompanyId(), accessToken, new JSONObject(), false)).start();
+        new Thread(new SendMsgThreadV2(messageJson, content,DepartEnum.ACTIVEDEPT.getCompanyId(), accessToken, new JSONObject(), false)).start();
     }
 
     /**
@@ -377,7 +342,7 @@ public class OAMessageUtil {
         //构建textMessage消息体
         JSONObject messageJson = buildMessage(ticketVO, departmentId, userids,new TextMessage(content), MsgTypeEnum.TEXT.getValue());
         //发送消息
-        new Thread(new SendMsgThread(messageJson, content,DepartEnum.ACTIVEDEPT.getCompanyId(), ticketVO.getAccessToken(), new JSONObject(), true)).start();
+        new Thread(new SendMsgThreadV2(messageJson, content,DepartEnum.ACTIVEDEPT.getCompanyId(), ticketVO.getAccessToken(), new JSONObject(), true)).start();
     }
 
 

@@ -312,7 +312,6 @@ public class IsvReceiveServlet extends HttpServlet {
                         }
                         ticketsService.modifyIsvTickets(isvTicketsEntity);
 
-
                         try {
                             boolean isBuy = marketBuyService.isBuy(corpId);
                             if (isBuy) {

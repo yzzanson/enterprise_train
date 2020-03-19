@@ -96,7 +96,6 @@ public class HttpUtil {
                     response.close();
                 }
             } catch (IOException e) {
-                logger.error("关流失败!", e);
             }
         }
         Assert.isTrue(result != null && result.getInteger("errcode") == 0, result.toString());
@@ -138,7 +137,6 @@ public class HttpUtil {
                 HttpEntity entity = response.getEntity();
                 if (entity != null) {
                     result = JSON.parseObject(EntityUtils.toString(entity, "utf-8"));
-                    logger.info("响应结果 value=" + result.toString());
                 }
             }
         } catch (Exception e) {
@@ -150,7 +148,6 @@ public class HttpUtil {
                     response.close();
                 }
             } catch (IOException e) {
-                logger.error("关流失败!", e);
             }
         }
         return result;
@@ -189,7 +186,6 @@ public class HttpUtil {
             try {
                 response.close();
             } catch (IOException e) {
-                logger.error("关流失败! ", e);
             }
         }
         Assert.isTrue(resultString != null && resultString.getString("errcode").equals("0"), "请求失败! 返回结果:" + resultString);
@@ -232,7 +228,6 @@ public class HttpUtil {
                 String resultStr = EntityUtils.toString(entity, "utf-8");
 
                 JSONObject result = JSON.parseObject(resultStr);
-                logger.info("执行结果：" + result.toJSONString());
                 //errcode = 0 表示成功
                 if (result.getInteger("errcode") == 0) {
                     return result;
@@ -242,7 +237,6 @@ public class HttpUtil {
                 }
             }
         } catch (IOException e) {
-            logger.error("request url=" + url + ", exception:", e);
         } finally {
             if (response != null) try {
                 response.close();

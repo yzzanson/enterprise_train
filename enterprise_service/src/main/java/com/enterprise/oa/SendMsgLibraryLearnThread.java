@@ -44,7 +44,7 @@ public class SendMsgLibraryLearnThread implements Runnable {
     public void run() {
         try {
             logger.info(String.format("accessToken%s,发送OA消息内容%s",accessToken,msgJsonObject.toString()));
-            resultJson = HttpUtil.httpPost(DDConstant.SEND_OA_URL + accessToken, msgJsonObject);
+            resultJson = HttpUtil.httpPost(DDConstant.SEND_OA_ASYNC_URL + accessToken, msgJsonObject);
             logger.info("发送OA结果:"+resultJson.toString());
         } finally {
             sendMsgCallBack(resultJson, companyId, libraryId,msgJsonObject.toJSONString(), storageFlag);

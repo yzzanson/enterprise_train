@@ -65,12 +65,10 @@ public class RankPraiseServiceImpl implements RankPraiseService {
             if (userXCompany!=null) {
                 String praiseTitle = String.format(PRAISE_TITLE, mobileLoginUser.getDingName());
                 praiseTitle+="\n"+ DateUtil.getDate_Y_M_D_H_M_S();
-//                LinkOAMessage linkOAMessage = new LinkOAMessage();
                 OAMessage oaMessage = new OAMessage();
                 String mainPage = String.format(MAIN_PAGE,mobileLoginUser.getCorpID());
                 String mainPageQrcode = String.format(QRCODE_PAGE, URLEncoder.encode(mainPage));
-//                OAMessageUtil.sendOAMessageWithStroage(mobileLoginUser.getCompanyID(), userXCompany.getDingUserId(), "", oaMessage.getSimpleOAMessage(mainPage, mainPageQrcode, praiseTitle));
-                OAMessageUtil.sendOAMessageWithStroage(companyId, userXCompany.getDingUserId(), "",oaMessage.getSimpleOAMessage(mainPage,mainPageQrcode,praiseTitle));
+                OAMessageUtil.sendOAMessageWithStroageV2(companyId, userXCompany.getDingUserId(), "",oaMessage.getSimpleOAMessage(mainPage,mainPageQrcode,praiseTitle));
             }
             return ResultJson.finishResultJson(ResultCodeEnum.SUCCESS.getValue(), "success", "点赞成功");
         }

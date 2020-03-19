@@ -7,8 +7,10 @@ import com.dingtalk.api.DefaultDingTalkClient;
 import com.dingtalk.api.DingTalkClient;
 import com.dingtalk.api.request.CorpRoleListRequest;
 import com.dingtalk.api.request.CorpRoleSimplelistRequest;
+import com.dingtalk.api.request.OapiUserUpdateRequest;
 import com.dingtalk.api.response.CorpRoleListResponse;
 import com.dingtalk.api.response.CorpRoleSimplelistResponse;
+import com.dingtalk.api.response.OapiUserUpdateResponse;
 import com.dingtalk.open.client.api.model.corp.CorpUserDetail;
 import com.enterprise.base.bean.DingCorpManager;
 import com.enterprise.base.bean.DingCorpUserDetail;
@@ -467,13 +469,28 @@ public class DingHelper {
 //            e.printStackTrace();
 //        }
 
-        String url = DDConstant.OAPI_HOST + "/auth/scopes?access_token=0a8c6796b2a93559b905585b968e6d9e";
-        JSONObject object = HttpUtil.get(url);
-        System.out.println(object.toJSONString());
+//        String url = DDConstant.OAPI_HOST + "/auth/scopes?access_token=0a8c6796b2a93559b905585b968e6d9e";
+//        JSONObject object = HttpUtil.get(url);
+//        System.out.println(object.toJSONString());
 
         //获取角色列表
 //        getCorpRoleList("872c6d5579e53c6489f58250eb63ad74");
         //获取角色包含人
 //        getRoleUserList("872c6d5579e53c6489f58250eb63ad74",151319775L);
+
+
+        DingTalkClient client = new DefaultDingTalkClient("https://oapi.dingtalk.com/user/update");
+        OapiUserUpdateRequest request = new OapiUserUpdateRequest();
+        request.setUserid("0217321951697739");
+//        request.setPosition(null);
+        String accessToken = "ee75f742879f35e593054614121d0243";
+
+        try {
+            OapiUserUpdateResponse response = client.execute(request, accessToken);
+            System.out.println(response.getErrcode());
+            System.out.println(response.getErrmsg());
+        } catch (ApiException e) {
+            e.printStackTrace();
+        }
     }
 }

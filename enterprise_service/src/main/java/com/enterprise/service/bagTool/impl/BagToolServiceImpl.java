@@ -323,7 +323,7 @@ public class BagToolServiceImpl implements BagToolService {
             String mainPageBury = MAIN_PAGE + GlobalConstant.OA_BURY_TYPE + OABuryEnum.TOOL.getValue();
             String mainPage = String.format(mainPageBury, corpId);
             String mainPageQrcode = String.format(QRCODE_PAGE, URLEncoder.encode(mainPage));
-            OAMessageUtil.sendOAMessageWithStroage(companyId, dingUserId, "", oaMessage.getSimpleOAMessage(mainPage, mainPageQrcode, content));
+            OAMessageUtil.sendOAMessageWithStroageV2(companyId, dingUserId, "", oaMessage.getSimpleOAMessage(mainPage, mainPageQrcode, content));
 
             //发送OA消息记录
             saveOASendBury(companyId, userId, OABuryEnum.TOOL.getValue(), new Date());

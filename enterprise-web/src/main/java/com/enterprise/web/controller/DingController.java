@@ -184,7 +184,7 @@ public class DingController extends BaseController {
         String mainPage = String.format(corpId);
         String praiseTitle = String.format(PRAISE_TITLE, "SuperStar");
         LinkOAMessage linkOAMessage = new LinkOAMessage();
-        OAMessageUtil.sendLinkMessageWithStroage(companyId, userid, linkOAMessage.getLinkOAMessage(mainPage, MESSAGE_URL, sb.toString(), praiseTitle));
+        OAMessageUtil.sendLinkMessageWithStroageV2(companyId, userid, linkOAMessage.getLinkOAMessage(mainPage, MESSAGE_URL, sb.toString(), praiseTitle));
         return ResultJson.succResultJson("");
     }
 
@@ -201,7 +201,7 @@ public class DingController extends BaseController {
         OAMessage oaMessage = new OAMessage();
         String mainPage = String.format(WELCOME_PAGE, corpId);
         String mainPageQrcode = String.format(QRCODE_PAGE, URLEncoder.encode(mainPage));
-        OAMessageUtil.sendOAMessageWithStroage(companyId, userid, "", oaMessage.getSimpleOAMessage(mainPage, mainPageQrcode, praiseTitle));
+        OAMessageUtil.sendOAMessageWithStroageV2(companyId, userid, "", oaMessage.getSimpleOAMessage(mainPage, mainPageQrcode, praiseTitle));
         return ResultJson.succResultJson("");
     }
 

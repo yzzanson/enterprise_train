@@ -404,7 +404,7 @@ public class PetFoodServiceImpl implements PetFoodService {
             String mainPage = String.format(mainPageBury, isvTicketsEntity.getCorpId());
             String mainPageQrcode = String.format(QRCODE_PAGE, URLEncoder.encode(mainPage));
             UserXCompany userXCompany = userXCompanyMapper.getDingIdByCorpIdAndUserId(isvTicketsEntity.getCorpId(), userId);
-            OAMessageUtil.sendOAMessageWithStroage(companyId, userXCompany.getDingUserId(), "", oaMessage.getSimpleOAMessage(mainPage, mainPageQrcode, feedTitle));
+            OAMessageUtil.sendOAMessageWithStroageV2(companyId, userXCompany.getDingUserId(), "", oaMessage.getSimpleOAMessage(mainPage, mainPageQrcode, feedTitle));
         }
     }
 

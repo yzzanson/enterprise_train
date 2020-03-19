@@ -369,7 +369,7 @@ public class PaperBallServiceImpl implements PaperBallService {
             String mainPageQrcode = String.format(QRCODE_PAGE, URLEncoder.encode(mainPage));
             UserXCompany userXCompany = userXCompanyMapper.getDingIdByCorpIdAndUserId(isvTicketsEntity.getCorpId(), paperBallEntity.getUserId());
 //                OAMessageUtil.sendOAMessageWithStroage(mobileLoginUser.getCompanyID(), userXCompany.getDingUserId(), "", oaMessage.getSimpleOAMessage(mainPage, mainPageQrcode, praiseTitle));
-            OAMessageUtil.sendOAMessageWithStroage(companyId, userXCompany.getDingUserId(), "", oaMessage.getSimpleOAMessage(mainPage, mainPageQrcode, praiseTitle));
+            OAMessageUtil.sendOAMessageWithStroageV2(companyId, userXCompany.getDingUserId(), "", oaMessage.getSimpleOAMessage(mainPage, mainPageQrcode, praiseTitle));
         }
     }
 

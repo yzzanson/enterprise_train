@@ -2,7 +2,6 @@ package com.enterprise.oa;
 
 import com.enterprise.base.common.DDConstant;
 import com.enterprise.base.common.GlobalConstant;
-import com.enterprise.base.common.LoginUser;
 import com.enterprise.base.enums.bury.OABuryEnum;
 import com.enterprise.util.oa.message.OAMessage;
 
@@ -35,8 +34,6 @@ public class WelcomeSingleThread implements Runnable {
             String QRCODE_PAGE = GlobalConstant.getQrCOdePage();
             String WELCOME_WORD = "今天我来到这个世界,陪你成长";
             String WELCOME_PAGE = DDConstant.ARRANGE_STUDY;
-            LoginUser loginUser = LoginUser.getUser();
-            //OAMessageUtil.sendTextMsgToDeptAndUser(content, deptid,userid);
             OAMessage oaMessage = new OAMessage();
             String chall_page = String.format(MOBILE_INDEX_PAGE, corpId);
             String chall_qr_code = String.format(QRCODE_PAGE, URLEncoder.encode(chall_page));
