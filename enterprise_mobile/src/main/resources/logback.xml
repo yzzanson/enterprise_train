@@ -16,6 +16,7 @@
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <FileNamePattern>${LOG_HOME}/train-mobile-info.log.%d{yyyy-MM-dd}</FileNamePattern>
             <MaxHistory>10</MaxHistory>
+            <maxFileSize>50MB</maxFileSize>
         </rollingPolicy>
         <filter class="ch.qos.logback.classic.filter.LevelFilter"> 
             <level>INFO</level> 
@@ -32,6 +33,7 @@
 		  <!--<Encoding>UTF-8</Encoding>-->
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <FileNamePattern>${LOG_HOME}/train-mobile-error.log.%d{yyyy-MM-dd}</FileNamePattern>
+            <maxFileSize>50MB</maxFileSize>
         </rollingPolicy>
         <filter class="ch.qos.logback.classic.filter.LevelFilter"> 
             <level>ERROR</level> 
