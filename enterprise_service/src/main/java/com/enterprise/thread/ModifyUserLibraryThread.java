@@ -113,7 +113,6 @@ public class ModifyUserLibraryThread implements Runnable {
         for (int i = 0; i < userXLibraryList.size(); i++) {
             Integer libraryId = userXLibraryList.get(i);
             QuestionsLibraryEntity questionLibraryEntity = questionsLibraryMapper.getById(libraryId);
-            logger.info("libraryId:"+libraryId);
             if(questionLibraryEntity!=null) {
                 logger.info(questionLibraryEntity.toString());
                 Integer subject = questionLibraryEntity.getSubject();
@@ -210,7 +209,6 @@ public class ModifyUserLibraryThread implements Runnable {
             }
         }
         String message = "companyId:" + companyId + ",userId" + userId + "更新了" + updateCount + "条记录,插入了" + insertLibraryList.size() + "条记录";
-        logger.info(message);
     }
 
     private Set<Integer> getApplyDepartmentIdSet(Integer companyId,List<StudyRemindVO> studyRemindDeptList){

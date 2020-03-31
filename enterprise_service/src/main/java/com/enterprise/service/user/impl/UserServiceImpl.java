@@ -164,11 +164,6 @@ public class UserServiceImpl implements UserService {
                 List<DingUserDetail> corpUserList = DingHelper.getMembersByCorpIdAndDeptId2(corpId, Long.valueOf(deptId));
                 // TODO 部门入口 修改 @shisan
                 getCompareUsers(insertData, updateData, corpUserList, dingIdSet, corpId, department.getDingDeptId());
-                if (corpId.equals("ding614949de72a0b8a2")) {
-                    logger.info("-----------------------------------------------");
-                    logger.info("部门:" + department.getName() + "新增数据:" + insertData.size() + "条,更新数据:" + updateData.size() + "条");
-                    logger.info("-----------------------------------------------");
-                }
             }
         }
 

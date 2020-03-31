@@ -61,7 +61,6 @@ public class EnterpriseMobileInterceptor extends BaseController implements Handl
             sb.append(parameterNames.hasMoreElements() ? "," : "");
         }
         sb.append("]");
-        logger.info("当前请求URL = " + sb.toString());
         if (currentUrl.contains("/login/logOut") || currentUrl.contains("/login/getConfig") || currentUrl.contains("/login/login") || currentUrl.contains("/login/testLogin") || currentUrl.contains("/login/getFromRedis") || currentUrl.contains("/login/getFromCookie")
                 || currentUrl.contains(PKRESULT) || currentUrl.contains(WEEKRANKSHARE) || currentUrl.contains(USERRANK) || currentUrl.contains(TOOLRANK) || currentUrl.contains(COMPANYRANKGEN) || currentUrl.contains(COMPANYRANK)
                 || currentUrl.contains("test") || currentUrl.contains("pressure") || currentUrl.contains(CERTIFICATE_DETAIL)) {

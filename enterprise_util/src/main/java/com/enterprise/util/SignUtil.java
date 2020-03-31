@@ -29,7 +29,6 @@ public class SignUtil {
                     sb.append(entry.getKey()).append(entry.getValue());
             }
         }
-        logger.info("Before Sign : {}", sb.toString());
         return DigestUtils.md5Hex(sb.toString()).toUpperCase();
     }
 

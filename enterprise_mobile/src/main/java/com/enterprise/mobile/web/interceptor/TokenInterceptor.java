@@ -80,8 +80,6 @@ public class TokenInterceptor implements HandlerInterceptor {
             String referrer = httpServletRequest.getHeader("referer");
             StringBuffer stringBuffer = new StringBuffer();
             stringBuffer.append(httpServletRequest.getServerName());
-            logger.info("referrer_in_header:"+referrer);
-            logger.info("server_name:"+stringBuffer.toString());
             if (StringUtils.isNotEmpty(referrer) && String.valueOf(referrer).indexOf(stringBuffer.toString()) >= 0) {
                 return true;
             } else {

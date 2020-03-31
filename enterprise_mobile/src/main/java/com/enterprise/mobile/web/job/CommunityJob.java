@@ -57,7 +57,6 @@ public class CommunityJob {
                 String subMessage = companyName + "/" + communityInviteDetailEntity.getUserName() + "/" + communityInviteDetailEntity.getPhoneNum();
                 sendMessageBuf.append(subMessage).append("\n");
             }
-            logger.info("第" + i + "次发送开通社区OA消息:" + sendMessageBuf.toString());
             OAMessageUtil.sendTextMsgToDept(sendMessageBuf.toString());
             sendMessageBuf = new StringBuffer(200);
             Thread.sleep(500);

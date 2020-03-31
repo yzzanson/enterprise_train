@@ -234,8 +234,6 @@ public class StudyRemindServiceImpl implements StudyRemindService {
                 String messageUrl = String.format(GlobalConstant.getChooseLibraryUrl(), corpId);
                 String arena_pk_result_qrcode = String.format(QRCODE_PAGE, URLEncoder.encode(messageUrl));
                 OAMessage oaMessage = new OAMessage().getOAMessageWithPic(messageUrl, arena_pk_result_qrcode, OAMessageUtil.getMessageContent(content), ARRANGE_DEFAULT_IMAGE);
-                logger.info("手机端url:" + messageUrl);
-                logger.info("pc端url:" + arena_pk_result_qrcode);
                 if (isAllUser) {
                     //10个人发送一次
                     StringBuffer dingUserBuffer = new StringBuffer(200);
@@ -292,7 +290,6 @@ public class StudyRemindServiceImpl implements StudyRemindService {
                                 }
                             }
                         }
-                        logger.info("第" + i + "次发送全体OA消息");
                         if (dingUserBuffer.length()>0) {
                             OAMessageUtil.sendOAMessageWithStroage(loginUser.getCompanyID(), dingUserBuffer.toString(), content, oaMessage.getOAMessageWithPic(messageUrl, arena_pk_result_qrcode, OAMessageUtil.getMessageContent(content), ARRANGE_DEFAULT_IMAGE));
                         }

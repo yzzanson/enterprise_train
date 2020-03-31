@@ -65,7 +65,6 @@ public class MyPetController extends BaseController {
     public JSONObject getMyPet() {
         try {
             MobileLoginUser mobileLoginUser = MobileLoginUser.getUser();
-            logger.info("获取宠物信息:"+mobileLoginUser.toString());
             JSONObject questionFeedBackJson = myPetService.getMyPet(mobileLoginUser.getUserID());
             return questionFeedBackJson;
         } catch (Exception e) {

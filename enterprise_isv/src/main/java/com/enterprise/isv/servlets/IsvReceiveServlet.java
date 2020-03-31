@@ -80,7 +80,6 @@ public class IsvReceiveServlet extends HttpServlet {
         ticketsService = SpringContextHolder.getBean(IsvTicketsService.class);
         companyInfoService = SpringContextHolder.getBean(CompanyInfoService.class);
         marketBuyService = SpringContextHolder.getBean(MarketBuyService.class);
-        logger.info("IsvReceiveServlet初始化....");
     }
 
     /**
@@ -174,7 +173,6 @@ public class IsvReceiveServlet extends HttpServlet {
             //对从encrypt解密出来的明文进行处理,不同的eventType的明文数据格式不同
             JSONObject plainTextJson = JSONObject.parseObject(plainText);
             String suiteKey = plainTextJson.getString("SuiteKey");
-            logger.info("服务窗请求参数 > " + plainTextJson.toJSONString() + "----------");
             String eventType = plainTextJson.getString("EventType");
 
             // res是需要返回给钉钉服务器的字符串，一般为success "check_create_suite_url"和"check_update_suite_url"事件为random字段,具体请查看文档或者对应eventType的处理步骤
@@ -191,7 +189,6 @@ public class IsvReceiveServlet extends HttpServlet {
                         String suiteTicket = plainTextJson.getString("SuiteTicket");
                         String suiteSecret = suitEntiy.getSuiteSecret();
                         //获取到suiteTicket之后需要换取suiteToken，
-                        logger.info("suiteTicket > " + suiteTicket + " suite_key>" + suitEntiy.getSuiteKey() + " SUITE_SECRET> " + suitEntiy.getSuiteSecret());
                         //应用套件access_token
                         JSONObject resultJson = AuthHelper.getSuiteAccessToken(suiteKey, suiteSecret, suiteTicket);
                         String suiteToken = resultJson.getString("suite_access_token");
@@ -222,7 +219,6 @@ public class IsvReceiveServlet extends HttpServlet {
                     p.clear();
                     p.put("tmp_auth_code", authCode);
                     object = HttpUtil.doPost(url, p);
-                    logger.info(url);
                     // 将corpId（企业id）和permanent_code（永久授权码）做持久化存储 之后在获取企业的access_token时需要使用
                     //todo 保存将corpId（企业id）和permanent_code（永久授权码）做持久化存储
                     //{"auth_corp_info":{"corp_name":" 实名认证2","corpid":"dingdad68ec54087869f35c2f4657eb6378f"},"ch_permanent_code":"M_13SWAuUPT9MjgNwlH4NWdB4YZPipy8k1QvbHxZGuL7OBUst2NWmbPIBYRTFmR6"}
@@ -259,7 +255,6 @@ public class IsvReceiveServlet extends HttpServlet {
                     if (agents != null && agents.size() > 0)
                         for (int i = 0; i < agents.size(); i++) {
                             JSONObject obj = agents.getJSONObject(i);
-                            logger.info("corpAppId:" + corpAppId + " appid:" + obj.getString("appid"));
                             if (corpAppId.equals(obj.getString("appid"))) {
                                 corpAgentId = obj.getString("agentid");
                                 logger.info("agentid:" + corpAgentId);
@@ -293,7 +288,6 @@ public class IsvReceiveServlet extends HttpServlet {
                         ticketsService.createIsvTickets(isvTicketsEntity);
                     } else {
                         isNewCompany = false;
-                        logger.info("更新企业信息corpAgentId:" + corpAgentId);
                         //更新企业名称
                         CompanyInfoEntity company = new CompanyInfoEntity();
                         company.setId(isvTicketsEntity.getCompanyId());
@@ -374,12 +368,10 @@ public class IsvReceiveServlet extends HttpServlet {
                     //此事件需要返回的"Random"字段，
                     res = plainTextJson.getString("Random");
                     plainTextJson.getString("TestSuiteKey");
-                    logger.info("事件将在创建套件的时候推送");
                     break;
                 case "check_update_suite_url":
                     // "check_update_suite_url"事件将在更新套件的时候推送,{ "EventType":"check_update_suite_url", "Random":"Aedr5LMW", "TestSuiteKey":"suited6db0pze8yao1b1y" }
                     res = plainTextJson.getString("Random");
-                    logger.info("[修改套件]------将在更新套件的时候推送");
                     break;
                 case "suite_relieve":
                     // 解除套件 { "EventType":"suite_relieve",  "SuiteKey":"suited6db0pze8yao1b1y", "TimeStamp":"12351458245", "AuthCorpId":"ding4583267d28sd61" }
@@ -395,7 +387,6 @@ public class IsvReceiveServlet extends HttpServlet {
                         companyInfoEntity.setDeleteTime(new Date());
                         companyInfoService.modifyCompanyInfo(companyInfoEntity);
                     }
-                    logger.info(AuthCorpId + "企业停用套件并删除了授权信息.....");
                     break;
                 case "org_micro_app_stop":
                     // 停用应用 {"AgentId":169293023,"AppId":4407,"AuthCorpId":"dinge1253172014accdd35c2f4657eb6378f","EventType":"org_micro_app_stop","SuiteKey":"suitez7pi8x9ud00vgzvj","TimeStamp":"1522379578749"}
@@ -405,7 +396,6 @@ public class IsvReceiveServlet extends HttpServlet {
                     companyInfoEntity.setAgentStatus(AgentStatusEnum.STOP_USE.getValue());
                     companyInfoEntity.setStopTime(new Date());
                     companyInfoService.modifyCompanyInfo(companyInfoEntity);
-                    logger.info(plainTextJson.getString("AuthCorpId") + "企业停用了套件.....");
                     break;
                 case "org_micro_app_restore":
                     // 启用应用 {"AgentId":169287253,"AppId":4407,"AuthCorpId":"dinge1253172014accdd35c2f4657eb6378f","EventType":"org_micro_app_restore","SuiteKey":"suitez7pi8x9ud00vgzvj","TimeStamp":"1522381482726"}
@@ -414,7 +404,6 @@ public class IsvReceiveServlet extends HttpServlet {
                     companyInfoRestore.setId(isvTicketRestore.getCompanyId());
                     companyInfoRestore.setAgentStatus(AgentStatusEnum.USEING.getValue());
                     companyInfoService.modifyCompanyInfo(companyInfoRestore);
-                    logger.info(plainTextJson.getString("AuthCorpId") + "企业启用了套件.....");
                     break;
                 case "market_buy":
                     //isv企业购买
@@ -448,7 +437,6 @@ public class IsvReceiveServlet extends HttpServlet {
                     }
                     break;
                 default:
-                    logger.info("------这一步不知道什么操作.....");
                     break;
             }
             //对返回信息进行加密
@@ -489,7 +477,6 @@ public class IsvReceiveServlet extends HttpServlet {
         logger.info("企业购买Infodetail:" + robortText);
         text.setContent(robortText);
         request.setText(text);
-        logger.info(request.toString());
         OapiRobotSendResponse response = client.execute(request);
         logger.info(response.toString());
     }

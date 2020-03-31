@@ -28,7 +28,6 @@ public class SessionFilter extends OncePerRequestFilter implements Filter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
 //        String sid = CookieUtil.getCookieValue(request, GlobalConstant.JSESSIONID);
         String sid = CookieUtil.getCookieValue(request, DDConstant.COOKIE_NAME_MOBILE);
-        logger.info("cookie_sid值初始化:"+sid);
         if(StringUtils.isEmpty(sid) || sid.length()==0){
             sid = getUuid();
 //            CookieUtil.setCookie(request, response, GlobalConstant.JSESSIONID, sid, 60 * 60);

@@ -28,6 +28,7 @@ public class ISVTicketsJob {
     private SuitesService suitesService;
 
     public void work() {
+        logger.info("start isv tickets job...");
         List<IsvTicketsEntity> list = isvTicketsService.seachRefreshIsvTickets();
         if (CollectionUtils.isEmpty(list)) {
             logger.info("没有要更新的内容...");

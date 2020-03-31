@@ -94,7 +94,6 @@ public class PaperBallServiceImpl implements PaperBallService {
      */
     @Override
     public Integer genPaperBall(Integer companyId) {
-//        logger.info("companyId:"+companyId);
         IsvTicketsEntity isvTicketsEntity = isvTicketsService.getIsvTicketByCompanyId(companyId);
         if (isvTicketsEntity == null) {
             return 0;
@@ -127,7 +126,6 @@ public class PaperBallServiceImpl implements PaperBallService {
             //随机选中的用户
             UserPetVO chooseUserVO = userXCompanyList.get(randomCount);
             Integer chooseUserId = chooseUserVO.getUserId();
-//            logger.info(companyId+"选中的用户为"+chooseUserId+":"+chooseUserVO.getName());
             Integer existPaperBallCount = paperBallMapper.getExistPaperBallCount(companyId, chooseUserId);
             if (existPaperBallCount >= 3) {
                 continue;

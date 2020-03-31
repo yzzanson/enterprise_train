@@ -64,7 +64,6 @@ public class DingCallServiceImpl implements DingCallService {
             String corpId = isvTicketEntity.getCorpId();
             String authUserInfo = AuthHelper.getAuthUserInfo(suiteTicket, suiteKey, suiteSecrect, corpId);
             if(StringUtils.isNotEmpty(authUserInfo)){
-                logger.info("isvid:"+isvTicketEntity.getId()+"corp:"+corpId+",authUserInfo"+authUserInfo);
                 isvTicketEntity.setAuthUserId(authUserInfo);
                 isvTicketsMapper.modifyIsvTickets(isvTicketEntity);
                 successCorpBuf.append(",").append(corpId);
@@ -130,7 +129,6 @@ public class DingCallServiceImpl implements DingCallService {
             IsvTicketsEntity isvTicketEntity = isvTicketsMapper.getIsvTicketByCompanyId(companyId);
             Integer isCall = AuthHelper.checkCall(isvTicketEntity.getCorpAccessToken());
             isvTicketEntity.setIsCall(isCall);
-            logger.info("companyId:"+companyId+",isCall"+isCall);
             isvTicketsMapper.modifyIsvTickets(isvTicketEntity);
             if (isCall!=null && isCall.equals(0)) {
                 failCorpBuf.append(",").append(isvTicketEntity.getCorpId());

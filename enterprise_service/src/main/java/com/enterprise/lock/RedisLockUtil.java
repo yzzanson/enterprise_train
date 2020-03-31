@@ -49,7 +49,6 @@ public class RedisLockUtil {
                     redisService.expirenx(key,expireTime);
                     break;
                 }
-                logger.info("获取锁失败,重试");
                 Thread.sleep(3,r.nextInt(500));
             }
         }catch (Exception e){

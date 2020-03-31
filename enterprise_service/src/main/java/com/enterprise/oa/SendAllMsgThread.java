@@ -40,10 +40,7 @@ public class SendAllMsgThread implements Runnable {
     @Override
     public void run() {
         try {
-            logger.info(String.format("accessToken%s,发送OA_content为%s,发送OA消息内容%s",accessToken,content,msgJsonObject.toString()));
-//            resultJson = HttpUtil.httpPost(DDConstant.SEND_OA_URL + accessToken, msgJsonObject);
             resultJson = HttpUtil.httpPost(DDConstant.SEND_OA_ASYNC_URL + accessToken, msgJsonObject);
-//            resultJson = HttpUtil.httpPost(DDConstant.SEND_ALL_OA_URL + accessToken, msgJsonObject);
             logger.info("发送OA结果:"+resultJson.toString());
         } finally {
             OAMessageUtil.sendMsgCallBack(resultJson, companyId, msgJsonObject.toJSONString(), content,storageFlag);

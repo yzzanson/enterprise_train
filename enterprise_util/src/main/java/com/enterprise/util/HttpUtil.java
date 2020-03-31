@@ -84,7 +84,6 @@ public class HttpUtil {
                 HttpEntity entity = response.getEntity();
                 if (entity != null) {
                     result = JSON.parseObject(EntityUtils.toString(entity, "utf-8"));
-                    logger.info("响应结果 value=" + result.toString());
                 }
             }
         } catch (Exception e) {
@@ -178,7 +177,6 @@ public class HttpUtil {
             response = httpClient.execute(httpPost);
             if (response.getStatusLine().getStatusCode() == 200) {
                 resultString = JSONObject.parseObject(EntityUtils.toString(response.getEntity(), "utf-8"));
-                logger.info("url = " + url + ",请求结果:" + resultString);
             }
         } catch (IOException e) {
             logger.error("发送Post 请求失败! url = " + url + ", result=" + resultString, e);

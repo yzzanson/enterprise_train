@@ -64,7 +64,6 @@ public class ModifyRestudyThread implements Runnable {
                 userXLibraryInDB.setAnswerCount(correctAnsweredQuestionNumber);
                 userXLibraryInDB.setSchedule(schedule);
                 userXLibraryInDB.setUpdateTime(new Date());
-                logger.info(userXLibraryInDB.toString());
                 updateList.add(userXLibraryInDB);
                 updatePublicLibraryIdSet.add(userXLibraryInDB.getId());
             }

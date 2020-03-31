@@ -184,7 +184,6 @@ public class UserXQuestionsServiceImpl implements UserXQuestionsService {
         }
         Integer type = questionsEntity.getType();
         String rightAnswer = questionsEntity.getAnswer().trim();
-        logger.info("answer:" + answer + "---rightAnswer:" + rightAnswer);
         if (type.equals(1) || type.equals(3)) {
             if (answer.equals(rightAnswer)) {
                 return QuestionAnswerEnum.RIGHT.getValue();

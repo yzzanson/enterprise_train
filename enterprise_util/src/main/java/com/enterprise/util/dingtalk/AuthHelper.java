@@ -70,7 +70,6 @@ public class AuthHelper {
     public static String getConfig(HttpServletRequest request, String corpId, String agentId, String ticket, String currentUrl) {
         String nonceStr = "abcdefg";
         long timeStamp = System.currentTimeMillis() / 1000;
-        logger.info(String.format("[签名参数],ticket=%s, nonceStr=%s, timeStamp=%s, url=%s", ticket, nonceStr, timeStamp, currentUrl));
         String signature = AuthHelper.sign(ticket, nonceStr, timeStamp, currentUrl);
 
         JSONObject configValue = new JSONObject();
@@ -104,7 +103,6 @@ public class AuthHelper {
         p.put("suite_secret", suiteSecret);
         p.put("suite_ticket", suiteTicket);
         JSONObject object = HttpUtil.doPost(DDConfig.GET_SUITE_TOKEN, p);
-        logger.info(String.format("根据%s,%s,%s 获取suite_access_token,返回结果:%s", suiteKey, suiteSecret, suiteTicket, object == null ? null : object.toString()));
         return object;
     }
 
@@ -181,7 +179,6 @@ public class AuthHelper {
         p.put("access_token", accessToken);
         String url = JSONUtil.appendJsonParamsToUrl(DDConfig.GET_CORP_JSAPI_TICKET, p);
         JSONObject object = HttpUtil.get(url);
-        logger.info("企业的 Ticket 》" + object.getString("ticket"));
 
         return object.getString("ticket");
     }
@@ -223,7 +220,6 @@ public class AuthHelper {
             p.clear();
             p.put("auth_corpid", corpId);
             JSONObject object = HttpUtil.doPost(url, p);
-            logger.info("企业授权信息结果 > " + object.toJSONString());
             if (object.get("errcode").equals(0)) {
                 String dingUserId = (String) JSONObject.parseObject(object.get("auth_user_info").toString()).get("userId");
 //            System.out.println(dingUserId);
@@ -266,7 +262,6 @@ public class AuthHelper {
             p.clear();
             p.put("staff_id_list", userList);
             JSONObject object = HttpUtil.doPost(url, p);
-            logger.info("设置发起只能电话员工 > " + object.toJSONString());
             return object;
         }catch (Exception e){
             e.printStackTrace();
@@ -285,7 +280,6 @@ public class AuthHelper {
             p.put("authed_staff_id", authUserId);
             logger.info("发起电话 > " + p.toJSONString());
             JSONObject object = HttpUtil.doPost(url, p);
-            logger.info("发起电话结果 > " + object.toJSONString());
             return object;
         }catch (Exception e){
             e.printStackTrace();

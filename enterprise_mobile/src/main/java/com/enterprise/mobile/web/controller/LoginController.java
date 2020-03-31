@@ -109,7 +109,6 @@ public class LoginController extends BaseController {
     public JSONObject getConfig(HttpServletRequest request, String corpid, String currentUrl) {
         AssertUtil.isTrue(!StringUtils.isEmpty(corpid), "企业corpid不能为空!");
         AssertUtil.isTrue(!StringUtils.isEmpty(currentUrl), "currentUrl不能为空!");
-        logger.info(String.format("corpid = %s, currentUrl = %s", corpid, currentUrl));
 
         IsvTicketsEntity entity = isvTicketsService.getIsvTicketByCorpId(corpid);
         AssertUtil.notNull(entity, "请先安装微应用!");
@@ -141,7 +140,6 @@ public class LoginController extends BaseController {
             logger.info("login >>>>>>> CORP_ID = " + request.getParameter(DDConstant.CORP_ID) + ", CODE = " + request.getParameter(DDConstant.CODE));
 
             IsvTicketsEntity isvTickets = isvTicketsService.getIsvTicketByCorpId(request.getParameter(DDConstant.CORP_ID));
-            logger.info("isvTickets:" + isvTickets.toString());
             AssertUtil.notNull(isvTickets, "该企业尚未接入应用,请先扫码授权接入!");
 
             String accessToken = isvTickets.getCorpAccessToken();
@@ -240,11 +238,6 @@ public class LoginController extends BaseController {
         //设置session
         setSession(loginUser, request, response);
 
-//        String token = csrfTokenUtil.generate();
-//        loginUser.setToken(token);
-//        response.setHeader("token", token);
-
-        logger.info("sessionStr:" + loginUser.toString());
         //设置session
         setSession(loginUser, request, response);
         //记录用户打开次数

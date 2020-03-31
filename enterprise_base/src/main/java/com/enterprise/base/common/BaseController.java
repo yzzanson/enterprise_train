@@ -26,7 +26,6 @@ public class BaseController {
         try {
             // 非业务异常 往日志中记录
             if (exception instanceof LoginException) {
-                logger.info("未登录");
                 out(response, ResultJson.hasLogin(exception.getMessage()).toString());
             } else if (exception instanceof BusinessException) {
                 logger.error("全局业务异常捕获:" + exception.getMessage());

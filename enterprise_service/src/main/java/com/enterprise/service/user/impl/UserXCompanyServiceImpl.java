@@ -122,7 +122,6 @@ public class UserXCompanyServiceImpl implements UserXCompanyService {
     public JSONObject findUserCompany(String corpId, String agentId, String companyName, Date startTime, Date endTime, PageEntity pageEntity) {
         PageHelper.startPage(pageEntity.getPageNo(), pageEntity.getPageSize());
         String compLogInfo = "corpId:%s,agentId:%s,companyName:%s,startTime:%s,endTime:%s";
-        logger.info(String.format(compLogInfo, corpId, agentId, companyName, startTime, endTime));
         PageInfo<UserXCompanyVO> pageInfo = new PageInfo<>(userXCompanyMapper.findUserCompany(corpId, agentId, companyName, startTime, endTime));
         Map<String, Object> dataMap = Maps.newHashMap();
         dataMap.put("list", pageInfo.getList());

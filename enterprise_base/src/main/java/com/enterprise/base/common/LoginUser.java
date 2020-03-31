@@ -69,7 +69,6 @@ public class LoginUser {
 //            // TODO 上线时需要放开以下注释代码
             HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
             String currentUrl = request.getRequestURI();
-            logger.info("currentUrl:" + currentUrl);
             String cookeiName = getCookieByName(request.getCookies(), DDConstant.COOKIE_NAME);
             LoginUser loginUser = (LoginUser) request.getSession().getAttribute(cookeiName);
             if (loginUser == null || (loginUser != null && loginUser.getUserID() == null)) {

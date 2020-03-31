@@ -56,7 +56,6 @@ public class ModifyUserQuestionThread implements Runnable {
 
     @Override
     public void run() {
-        logger.info(questionId + "线程开始更新用户答题状态!");
         UserXQuestionsService userXQuestionsService = SpringContextHolder.getBean(UserXQuestionsService.class);
 //        UserXLibraryService userXLibraryService = SpringContextHolder.getBean(UserXLibraryService.class);
         UserXLibraryMapper userXLibraryMapper = SpringContextHolder.getBean(UserXLibraryMapper.class);

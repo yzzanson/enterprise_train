@@ -59,15 +59,15 @@
     <task:annotation-driven/>
     <bean id="refreshTokenJob" class="com.enterprise.isv.jobs.ISVTicketsJob"/>
     <bean id="suitesJob" class="com.enterprise.isv.jobs.SuitesJob"/>
-    <bean id="authUserJob" class="com.enterprise.web.job.AuthUserJob"/>
-    <bean id="priceJob" class="com.enterprise.web.job.PriceJob"/>
+    <!--<bean id="authUserJob" class="com.enterprise.web.job.AuthUserJob"/>-->
+    <!--<bean id="priceJob" class="com.enterprise.web.job.PriceJob"/>-->
     <task:scheduled-tasks>
         <!--程序启动5s后调用refreshProductJob类中的refreshProduct方法，然后每隔1.5（1.5*60*60*1000）个小时再调用refreshProduct一次-->
-        <task:scheduled ref="refreshTokenJob" method="work" fixed-delay="5400000" initial-delay="5000"/>
+        <task:scheduled ref="refreshTokenJob" method="work" fixed-delay="5400000" initial-delay="5000000"/>
         <!--程序启动5s后调用SuitesJob类中的work方法，然后每隔15（15*60*1000）分钟再调用work一次-->
-        <task:scheduled ref="suitesJob" method="work" fixed-delay="900000" initial-delay="5000"/>
-        <task:scheduled ref="authUserJob" method="work" fixed-delay="900000" initial-delay="5000"/>
-        <task:scheduled ref="priceJob" method="sendPriceMsg" cron="0 0 9 * * ?"/>
+        <task:scheduled ref="suitesJob" method="work" fixed-delay="900000" initial-delay="5000000"/>
+        <!--<task:scheduled ref="authUserJob" method="work" fixed-delay="900000" initial-delay="5000"/>-->
+        <!--<task:scheduled ref="priceJob" method="sendPriceMsg" cron="0 0 9 * * ?"/>-->
     </task:scheduled-tasks>
 
 

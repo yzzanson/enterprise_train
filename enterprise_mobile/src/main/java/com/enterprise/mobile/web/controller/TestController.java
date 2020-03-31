@@ -9,7 +9,6 @@ import com.enterprise.base.entity.WeekRankEntity;
 import com.enterprise.base.vo.UserAnswerRankSimpleNewVO;
 import com.enterprise.isv.thread.SynchronizeLibrary;
 import com.enterprise.lock.RedisLockUtil;
-import com.enterprise.oa.OAMessageUtil;
 import com.enterprise.service.company.CompanyInfoService;
 import com.enterprise.service.marketBuy.MarketBuyService;
 import com.enterprise.service.paperBall.PaperBallService;
@@ -22,7 +21,6 @@ import com.enterprise.service.user.UserService;
 import com.enterprise.service.user.UserXTitleService;
 import com.enterprise.thread.ModifyUserLibraryThread;
 import com.enterprise.util.DateUtil;
-import com.enterprise.util.oa.message.OAMessage;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +29,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 /**
  * TestController
@@ -80,7 +80,6 @@ public class TestController extends BaseController {
     public JSONObject getJson(Integer id) {
         MobileLoginUser m = MobileLoginUser.getUser();
         MobileLoginUser mobileLoginUser2 = ThreadLocalManager.getMobileLoginUser();
-        logger.info(mobileLoginUser2.toString());
         return ResultJson.succResultJson(id);
     }
 

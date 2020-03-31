@@ -97,7 +97,6 @@ public class MarketBuyServiceImpl implements MarketBuyService {
                 marketBuyMapper.batchUpdate(list);
             }
 
-            logger.info("最终:" + marketBuy.toString());
             marketBuyMapper.createMarketBuy(marketBuy);
 
             // 跟新isvtickets  购买字段

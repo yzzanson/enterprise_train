@@ -42,7 +42,6 @@ public class SimpleCORSFilter implements Filter {
 //        }
 
         String curOrigin = request.getHeader("Origin");
-        logger.info("curOrigin:"+curOrigin);
         //String curOrigin = ((HttpServletRequest) req).getRequestURL().toString();
         if(curOrigin!=null && curOrigin.contains("https")){
             String head="https://";

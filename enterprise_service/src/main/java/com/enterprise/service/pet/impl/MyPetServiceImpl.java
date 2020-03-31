@@ -87,7 +87,6 @@ public class MyPetServiceImpl implements MyPetService {
             AssertUtil.isTrue(myPetEntity.getPetName().length() <= 6, "宠物名字过长");
             MyPetVO myPetVO = myPetMapper.getMyPet(myPetEntity.getUserId());
             if (myPetVO != null) {
-                logger.info("创建宠物service:" + myPetVO.toString());
                 myPetEntity.setId(myPetVO.getId());
                 return myPetMapper.updateMyPet(myPetEntity);
             } else {
