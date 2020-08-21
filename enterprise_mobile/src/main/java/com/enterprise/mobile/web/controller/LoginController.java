@@ -99,7 +99,8 @@ public class LoginController extends BaseController {
 
     /**
      * 首页(获取钉钉免登陆所需要的信息)
-     *corp
+     * corp
+     *
      * @param corpid     企业corpid
      * @param currentUrl 当前url
      * @return
@@ -110,9 +111,16 @@ public class LoginController extends BaseController {
         AssertUtil.isTrue(!StringUtils.isEmpty(corpid), "企业corpid不能为空!");
         AssertUtil.isTrue(!StringUtils.isEmpty(currentUrl), "currentUrl不能为空!");
 
-        IsvTicketsEntity entity = isvTicketsService.getIsvTicketByCorpId(corpid);
-        AssertUtil.notNull(entity, "请先安装微应用!");
+        logger.info("当前企业corpid:{}",corpid);
 
+        IsvTicketsEntity entity = isvTicketsService.getIsvTicketByCorpId(corpid);
+//        AssertUtil.notNull(entity, "请先安装微应用!");
+
+//        if(StringUtils.isEmpty(entity.getCorpTicket())){
+
+
+        entity = isvTicketsService.refreshIsvTicket(entity);
+//        }
         String configValue = AuthHelper.getConfig(request, corpid, entity.getCorpAgentId(), entity.getCorpTicket(), currentUrl);
         Map<String, Object> map = Maps.newHashMap();
         map.put("configValue", configValue);
@@ -162,7 +170,7 @@ public class LoginController extends BaseController {
             String companyName = companyInfoEntity.getName();
             Integer companyId = companyInfoEntity.getId();
 
-            Integer isSuperManage = userRightGroupService.checkIsSuperManage(companyId,userInDB.getId());
+            Integer isSuperManage = userRightGroupService.checkIsSuperManage(companyId, userInDB.getId());
             MobileLoginUser loginUser = new MobileLoginUser();
             loginUser.setCorpID(userXCompanyInDB.getCorpId());
             loginUser.setUserID(userInDB.getId());
@@ -185,15 +193,15 @@ public class LoginController extends BaseController {
 //        response.setHeader("token", token);
             //记录用户打开次数
             loginStorage(userXCompanyInDB.getUserId(), isvTickets.getCompanyId());
-            new Thread(new ModifyUserLibraryThread(isvTickets.getCompanyId(),userXCompanyInDB.getUserId())).start();
+            new Thread(new ModifyUserLibraryThread(isvTickets.getCompanyId(), userXCompanyInDB.getUserId())).start();
             return ResultJson.succResultJson("loginUser", loginUser);
-        }catch (Exception e){
+        } catch (Exception e) {
             return ResultJson.errorResultJson(e.getMessage());
         }
     }
 
-    private void loginStorage(Integer userId,Integer companyId){
-        UserXOpenEntity userXOpenEntity = new UserXOpenEntity(userId,companyId, StatusEnum.OK.getValue());
+    private void loginStorage(Integer userId, Integer companyId) {
+        UserXOpenEntity userXOpenEntity = new UserXOpenEntity(userId, companyId, StatusEnum.OK.getValue());
         userXOpenService.createOrUpdateUserXOpen(userXOpenEntity);
     }
 
@@ -212,7 +220,7 @@ public class LoginController extends BaseController {
      */
     @RequestMapping(value = "/testLogin")
     @ResponseBody
-    public JSONObject testLogin(HttpServletRequest request,HttpServletResponse response) {
+    public JSONObject testLogin(HttpServletRequest request, HttpServletResponse response) {
         IsvTicketsEntity isvTickets = isvTicketsService.getIsvTicketByCorpId(request.getParameter(DDConstant.CORP_ID));
         AssertUtil.notNull(isvTickets, "该企业尚未接入应用,请先扫码授权接入!");
 
@@ -241,7 +249,7 @@ public class LoginController extends BaseController {
         //设置session
         setSession(loginUser, request, response);
         //记录用户打开次数
-        loginStorage(userXCompanyInDB.getUserId(),isvTickets.getCompanyId());
+        loginStorage(userXCompanyInDB.getUserId(), isvTickets.getCompanyId());
 
         return ResultJson.succResultJson("loginUser", loginUser);
     }
@@ -280,13 +288,13 @@ public class LoginController extends BaseController {
      * @author shisan
      * @date 2017/11/20 上午10:23
      */
-    private void setSession(MobileLoginUser loginUser, HttpServletRequest request,HttpServletResponse response) {
+    private void setSession(MobileLoginUser loginUser, HttpServletRequest request, HttpServletResponse response) {
         try {
             String sid = CookieUtil.getCookieValue(request, DDConstant.COOKIE_NAME_MOBILE);
             logger.info("cookie_sid值初始化:" + sid);
-            if(org.apache.commons.lang3.StringUtils.isEmpty(sid) || sid.length()==0){
+            if (org.apache.commons.lang3.StringUtils.isEmpty(sid) || sid.length() == 0) {
                 sid = SessionFilter.getUuid();
-                CookieUtil.setCookie(request, response, DDConstant.COOKIE_NAME_MOBILE, sid, 2*60*60);
+                CookieUtil.setCookie(request, response, DDConstant.COOKIE_NAME_MOBILE, sid, 2 * 60 * 60);
             }
             request.getSession().setAttribute(sid, loginUser);
             CookieUtil.setCookie(request, response, DDConstant.USER_MOBILE, MobileLoginUser.getUserCookieStr(loginUser), 24 * 60 * 60);

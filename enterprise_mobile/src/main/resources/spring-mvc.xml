@@ -60,11 +60,11 @@
     <bean id="communityJob" class="com.enterprise.mobile.web.job.CommunityJob"/>
 
 
-    <task:scheduled-tasks>
-        <task:scheduled ref="consumeFoodJob" method="work" cron="0 */2 * * * ?"/>
-        <task:scheduled ref="genPaperJob" method="vanish" cron="0 */10 9-21 * * ?"/>
-        <task:scheduled ref="communityJob" method="informCommunity" cron="0 0 9 * * ?"/>
-    </task:scheduled-tasks>
+    <!--<task:scheduled-tasks>-->
+        <!--<task:scheduled ref="consumeFoodJob" method="work" cron="0 */2 * * * ?"/>-->
+        <!--<task:scheduled ref="genPaperJob" method="vanish" cron="0 */10 9-21 * * ?"/>-->
+        <!--<task:scheduled ref="communityJob" method="informCommunity" cron="0 0 9 * * ?"/>-->
+    <!--</task:scheduled-tasks>-->
 
 
     <!--程序启动5s后调用refreshProductJob类中的refreshProduct方法，然后每隔1.5（1.5*60*60*1000）个小时再调用refreshProduct一次-->

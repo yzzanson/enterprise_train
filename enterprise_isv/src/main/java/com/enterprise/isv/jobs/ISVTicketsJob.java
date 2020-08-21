@@ -31,7 +31,7 @@ public class ISVTicketsJob {
         logger.info("start isv tickets job...");
         List<IsvTicketsEntity> list = isvTicketsService.seachRefreshIsvTickets();
         if (CollectionUtils.isEmpty(list)) {
-            logger.info("没有要更新的内容...");
+            logger.info("没`有要更新的内容...");
             return;
         }
         // todo 查出自己业务规定快过过期的ticket 列表     接入者自己查

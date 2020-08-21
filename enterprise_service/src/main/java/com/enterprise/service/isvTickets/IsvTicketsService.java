@@ -73,6 +73,6 @@ public interface IsvTicketsService {
      * @author shisan
      * @date 2018/3/26 下午2:08
      */
-    void refreshIsvTicket(IsvTicketsEntity entity);
+    IsvTicketsEntity refreshIsvTicket(IsvTicketsEntity entity);
 
 }

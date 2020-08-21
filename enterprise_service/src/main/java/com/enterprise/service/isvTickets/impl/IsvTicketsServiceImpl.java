@@ -69,7 +69,7 @@ public class IsvTicketsServiceImpl implements IsvTicketsService {
         return isvTicketsMapper.getIsvTicketByCompanyId(companyId);
     }
 
-    private String isvRefreshOne(IsvTicketsEntity isvTicket) {
+    private IsvTicketsEntity isvRefreshOne(IsvTicketsEntity isvTicket) {
         SuitesEntity suitesEntityInDB = suitesService.getSuitesentity(new SuitesEntity(StatusEnum.OK.getValue(), isvTicket.getSuiteId()));
         // 企业的ticket
         String corpAccessToken = AuthHelper.getCorpAccessToken(isvTicket.getCorpId(), suitesEntityInDB.getSuiteAccessToken(), isvTicket.getCorpPermanentCode());
@@ -77,7 +77,7 @@ public class IsvTicketsServiceImpl implements IsvTicketsService {
         isvTicket.setCorpAccessToken(corpAccessToken);
         isvTicket.setCorpTicket(corpTicket);
         isvTicketsMapper.modifyIsvTickets(isvTicket);
-        return corpAccessToken;
+        return isvTicket;
     }
 
     @Override
@@ -90,9 +90,9 @@ public class IsvTicketsServiceImpl implements IsvTicketsService {
     }
 
     @Override
-    public void refreshIsvTicket(IsvTicketsEntity entity) {
+    public IsvTicketsEntity refreshIsvTicket(IsvTicketsEntity entity) {
         AssertUtil.notNull(entity, "IsvTickets信息不能为空!");
         AssertUtil.notNull(entity.getSuiteId(), "套件Id不能为空!");
-        isvRefreshOne(entity);
+        return isvRefreshOne(entity);
     }
 }
