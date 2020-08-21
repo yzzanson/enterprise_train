@@ -28,17 +28,6 @@
             <bean class="com.enterprise.mobile.web.interceptor.EnterpriseMobileInterceptor"></bean>
         </mvc:interceptor>
 
-        <!--<mvc:interceptor>-->
-            <!--<mvc:mapping path="/**"/>-->
-            <!--<mvc:exclude-mapping path="/resources/**"/>-->
-            <!--<bean class="com.enterprise.mobile.web.interceptor.TokenInterceptor"></bean>-->
-        <!--</mvc:interceptor>-->
-
-        <!--<mvc:interceptor>-->
-            <!--<mvc:mapping path="/**"/>-->
-            <!--<mvc:exclude-mapping path="/resources/**"/>-->
-            <!--<bean class="com.enterprise.mobile.web.interceptor.SignInterceptor"></bean>-->
-        <!--</mvc:interceptor>-->
     </mvc:interceptors>
 
 
@@ -64,7 +53,7 @@
 
     <task:annotation-driven/>
 
-    <!--定时器开关
+    <!--定时器开关 -->
     <bean id="bagToolResusElimateJob" class="com.enterprise.mobile.web.job.BagToolElimateJob"/>
     <bean id="consumeFoodJob" class="com.enterprise.mobile.web.job.PetFoodConsumeJob"/>
     <bean id="genPaperJob" class="com.enterprise.mobile.web.job.PaperBallJob"/>
@@ -73,11 +62,10 @@
 
     <task:scheduled-tasks>
         <task:scheduled ref="consumeFoodJob" method="work" cron="0 */2 * * * ?"/>
-        <task:scheduled ref="genPaperJob" method="generate" cron="0 */5 9-21 * * ?"/>
         <task:scheduled ref="genPaperJob" method="vanish" cron="0 */10 9-21 * * ?"/>
         <task:scheduled ref="communityJob" method="informCommunity" cron="0 0 9 * * ?"/>
     </task:scheduled-tasks>
--->
+
 
     <!--程序启动5s后调用refreshProductJob类中的refreshProduct方法，然后每隔1.5（1.5*60*60*1000）个小时再调用refreshProduct一次-->
         <!--程序启动5s后调用SuitesJob类中的work方法，然后每隔15（15*60*1000）分钟再调用work一次-->

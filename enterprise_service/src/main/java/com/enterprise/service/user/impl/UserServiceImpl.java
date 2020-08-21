@@ -8,7 +8,6 @@ import com.enterprise.base.common.*;
 import com.enterprise.base.entity.*;
 import com.enterprise.base.entity.bury.AppInviteBuryEntity;
 import com.enterprise.base.entity.bury.OASendBuryEntity;
-import com.enterprise.base.enums.PetFoodGainEnum;
 import com.enterprise.base.enums.StatusEnum;
 import com.enterprise.base.enums.SubjectEnum;
 import com.enterprise.base.enums.UserSourceEnum;
@@ -617,25 +616,25 @@ public class UserServiceImpl implements UserService {
 
                 if (isCorpNewUser) {
                     //更新该用户在公司的饲料数
-                    MyPetVO myPetVO = myPetMapper.getMyPet(userId);
-                    if (myPetVO != null) {
-                        Boolean isExist = true;
-                        PetFoodDetailEntity petFoodDetailEntity = petFoodDetailMapper.getByCompanyAndUserId(companyId, userId);
-                        if (petFoodDetailEntity == null) {
-                            petFoodDetailEntity = new PetFoodDetailEntity(companyId, userId, PetFoodGainEnum.INIT.getValue(), PET_INIT_FOOD_COUNT, new Date(), new Date());
-                            petFoodDetailMapper.createPetFoodDetail(petFoodDetailEntity);
-                            isExist = false;
-                        }
-                        PetFoodEntity petFoodEntity = petFoodMapper.getPetFood(companyId, userId);
-                        if (petFoodEntity == null) {
-                            petFoodEntity = new PetFoodEntity(companyId, userId, PET_INIT_FOOD_COUNT, new Date(), new Date());
-                            petFoodMapper.createPetFood(petFoodEntity);
-                        } else if (petFoodEntity != null && !isExist) {
-                            Integer foodCount = petFoodEntity.getFoodCount() + PET_INIT_FOOD_COUNT;
-                            petFoodEntity.setFoodCount(foodCount);
-                            petFoodMapper.updatePetFood(petFoodEntity);
-                        }
-                    }
+//                    MyPetVO myPetVO = myPetMapper.getMyPet(userId);
+//                    if (myPetVO != null) {
+//                        Boolean isExist = true;
+//                        PetFoodDetailEntity petFoodDetailEntity = petFoodDetailMapper.getByCompanyAndUserId(companyId, userId);
+//                        if (petFoodDetailEntity == null) {
+//                            petFoodDetailEntity = new PetFoodDetailEntity(companyId, userId, PetFoodGainEnum.INIT.getValue(), PET_INIT_FOOD_COUNT, new Date(), new Date());
+//                            petFoodDetailMapper.createPetFoodDetail(petFoodDetailEntity);
+//                            isExist = false;
+//                        }
+//                        PetFoodEntity petFoodEntity = petFoodMapper.getPetFood(companyId, userId);
+//                        if (petFoodEntity == null) {
+//                            petFoodEntity = new PetFoodEntity(companyId, userId, PET_INIT_FOOD_COUNT, new Date(), new Date());
+//                            petFoodMapper.createPetFood(petFoodEntity);
+//                        } else if (petFoodEntity != null && !isExist) {
+//                            Integer foodCount = petFoodEntity.getFoodCount() + PET_INIT_FOOD_COUNT;
+//                            petFoodEntity.setFoodCount(foodCount);
+//                            petFoodMapper.updatePetFood(petFoodEntity);
+//                        }
+//                    }
 
                     new Thread(new WelcomeSingleThread(corpUserDetail.getUserid(), corpId, companyId)).start();
                     saveOASendBury(companyId, userId, OABuryEnum.ENTER.getValue(), new Date());

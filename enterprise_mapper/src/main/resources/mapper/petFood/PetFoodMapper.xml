@@ -42,7 +42,7 @@
     </insert>
 
     <select id="getPetFood" resultMap="BaseResultMap">
-        SELECT * FROM pet_food WHERE company_id = #{companyId} AND user_id = #{userId}
+        SELECT * FROM pet_food WHERE company_id = #{companyId} AND user_id = #{userId} LIMIT 0,1
     </select>
 
     <select id="getPetFoodList" resultMap="BaseResultMap">

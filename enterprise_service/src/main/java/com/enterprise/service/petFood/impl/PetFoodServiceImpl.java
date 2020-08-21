@@ -259,6 +259,23 @@ public class PetFoodServiceImpl implements PetFoodService {
             return ResultJson.kickedutResultJson("不能给自己投食");
         }
         PetFoodEntity petFoodEntity = petFoodMapper.getPetFood(companyId, sUserId);
+        PetFoodEntity petFoodUserEntity = petFoodMapper.getPetFood(companyId, userId);
+        if(petFoodUserEntity==null){
+            Integer petFoodCount = 0;
+            PetFoodDetailEntity petFoodDetailEntity =  petFoodDetailMapper.getByCompanyAndUserId(companyId, userId);
+            if(petFoodDetailEntity==null) {
+                petFoodDetailEntity = new PetFoodDetailEntity(companyId, userId, PetFoodGainEnum.INIT.getValue(), PET_INIT_FOOD_COUNT, new Date(), new Date());
+                petFoodDetailMapper.createPetFoodDetail(petFoodDetailEntity);
+                petFoodCount = PET_INIT_FOOD_COUNT;
+            }else{
+                petFoodCount = petFoodDetailMapper.getUserPetFoodCount(companyId, userId);
+            }
+            //如果没有则查询并初始化食物
+            petFoodEntity = new PetFoodEntity(companyId,userId,petFoodCount,new Date(),new Date());
+            petFoodMapper.createPetFood(petFoodEntity);
+        }
+
+
         if (petFoodEntity.getFoodCount() < EACH_FEED_OTHER_COUNT) {
             return ResultJson.kickedutResultJson(NO_FOOD);
         }
@@ -274,6 +291,8 @@ public class PetFoodServiceImpl implements PetFoodService {
         Integer foodCountUpdate = petFoodMapper.updatePetFood(new PetFoodEntity(petFoodEntity.getId(), foodRemainCount, new Date()));
         Integer foodDetailInsert = petFoodDetailMapper.createPetFoodDetail(new PetFoodDetailEntity(companyId, sUserId, PetFoodGainEnum.FEEDOTHER.getValue(), -EACH_FEED_OTHER_COUNT, new Date(), new Date()));
         Date createDate = new Date();
+
+
         //判断是否有值
         PetFoodPlateEntity feedUserPlate = petFoodPlateMapper.getPeteFoodPlateByUser(companyId, userId);
         if (feedUserPlate == null) {
