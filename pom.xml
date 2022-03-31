@@ -27,7 +27,7 @@
     <properties>
         <enterprise-train.version>1.4-SNAPSHOT</enterprise-train.version>
         <!-- spring版本号 -->
-        <spring.version>4.3.2.RELEASE</spring.version>
+        <spring.version>5.3.18</spring.version>
         <spring.crypr.version>4.2.4.RELEASE</spring.crypr.version>
         <slf4j.version>1.7.12</slf4j.version>
         <jackson.version>2.8.5</jackson.version>
